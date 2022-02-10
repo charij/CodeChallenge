@@ -65,9 +65,8 @@ class Starfield extends ex.Actor {
    draw(ctx: CanvasRenderingContext2D, delta: number) {
 
       for (var i = 0; i < this._stars.length; i++) {
-         ctx.fillStyle = ex.Color.fromRGB(255, 255, 255, this._stars[i].o);
+         ctx.fillStyle = 'rgb(255, 255, 255)';// ex.Color.fromRGB(255, 255, 255, this._stars[i].o);
          ctx.fillRect(this._stars[i].x, this._stars[i].y, 1, 1);
-      }
-      
+      }      
    }
 }

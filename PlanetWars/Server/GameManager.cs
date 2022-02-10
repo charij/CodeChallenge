@@ -61,7 +61,7 @@ namespace PlanetWars.Server
         {
             // check for waiting games and log players into that
             var game = GetWaitingGame();
-            if(game != null)
+            if (game != null)
             {
                 game.Waiting = false;
                 return game.LogonPlayer(request.AgentName);
@@ -71,7 +71,7 @@ namespace PlanetWars.Server
                 game = GetNewGame();
                 game.Waiting = true;
                 game.Start();
-                game.StartDemoAgent("Demo");
+                //game.StartDemoAgent("Demo");
                 return game.LogonPlayer(request.AgentName);
             }            
         }

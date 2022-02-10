@@ -50,7 +50,6 @@ namespace PlanetWars.Controllers
             if (results.IsValid)
             {
                 return _gameManager.Execute(logon);
-                
             }
             else
             {
@@ -74,7 +73,6 @@ namespace PlanetWars.Controllers
             }
         }
 
-
         [HttpPost]
         [Route("api/move")]
         public List<BaseResult<MoveResult>> Move(List<MoveRequest> moves)
@@ -96,6 +94,5 @@ namespace PlanetWars.Controllers
             }
             return results;
         }
-
     }
 }
