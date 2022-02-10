@@ -60,70 +60,61 @@ namespace CSharpAgent
                 
                 // if planet that the enemy is attacking is not ours
                 
-                var isNotAttackOurPlannets = notOwnedPlanets.Any(x => largestEnemyAttackFleet != null && x.Id == largestEnemyAttackFleet.DestinationPlanetId);
+                var enemyAttackingNeutralPlanet = notOwnedPlanets.Any(x => largestEnemyAttackFleet != null && x.Id == largestEnemyAttackFleet.DestinationPlanetId);
+                
+                
+                
 
-                if (largestEnemyAttackFleet != null && isNotAttackOurPlannets)
+                if (largestEnemyAttackFleet != null && enemyAttackingNeutralPlanet)
                 {
-
                     targetPlanet = gs.Planets.First(x => x.Id == largestEnemyAttackFleet.SourcePlanetId);
 
-                    ships = planet.NumberOfShips /4;
+                    ships = planet.NumberOfShips /2;
                     
+                    var numberOfShips = targetPlanet.NumberOfShips;
+
+                    if (ships > numberOfShips)
+                    {
+                        ships -= numberOfShips;
+                    }
                 }
                 else
                 {
-                    if (planet.NumberOfShips < 10)
+                    var distances = new Dictionary<Planet, double>();
+
+                    double shortestDistance = double.MaxValue;
+            
+                    foreach (var notOwnedPlanet in notOwnedPlanets)
                     {
-                        continue;
+                        var distance = planet.Position.Distance(notOwnedPlanet.Position);
+                    
+                        distances.Add(notOwnedPlanet, distance);
+                    
+                        // distances[planet] = distance;
+                    
                     }
-                    if (planet == bigBoy)
+
+                    var planetDistances = distances.OrderBy(x => x.Value).ToList();
+
+                    if (planetDistances.Count() > 1)
                     {
+                        targetPlanet = planetDistances[0].Key.NumberOfShips < planetDistances[1].Key.NumberOfShips
+                            ? planetDistances[0].Key
+                            : planetDistances[1].Key;
 
-                        //dont attack for 4 turns
+                        var targetPlanetNumberOfShips = ships - targetPlanet.NumberOfShips;
 
-                        // if (turnsWaitedBigBoy < 5)
-                        // {
-                        //     turnsWaitedBigBoy++;
-                        //     continue;
-                        // }
-                        //attack biggest growth rate planet not owned by us
-
-                        targetPlanet = notOwnedPlanets.OrderBy(x => x.GrowthRate).Last();
-
-                        ships = planet.NumberOfShips - 1;
-
+                        if (targetPlanetNumberOfShips > 0)
+                        {
+                            ships = targetPlanetNumberOfShips;
+                        }
+                        
                     }
                     else
                     {
-
-                        var distances = new Dictionary<Planet, double>();
-
-                        double shortestDistance = double.MaxValue;
-                
-                        foreach (var notOwnedPlanet in notOwnedPlanets)
-                        {
-                            var distance = planet.Position.Distance(notOwnedPlanet.Position);
-                        
-                            distances.Add(notOwnedPlanet, distance);
-                        
-                            // distances[planet] = distance;
-                        
-                        }
-
-                        var planetDistances = distances.OrderBy(x => x.Value).ToList();
-
-                        if (planetDistances.Count() > 1)
-                        {
-                            targetPlanet = planetDistances[0].Key.NumberOfShips < planetDistances[1].Key.NumberOfShips
-                                ? planetDistances[0].Key
-                                : planetDistances[1].Key;
-                        }
-                        else
-                        {
-                            targetPlanet = planetDistances.First().Key;
-                        }
-                    
+                        targetPlanet = planetDistances.First().Key;
                     }
+                        
                 }
                 
                 
