@@ -19,6 +19,34 @@ namespace CSharpAgent
 
     };
 
+    public class planetDistance
+    {
+        public planetDistance(int planetId, double dist)
+        {
+            this.planetId = planetId;
+            this.dist = dist;
+        }
+        public int planetId { get; set; }
+        public double dist { get; set; }
+
+    };
+
+    public class ownedPlanets
+    {
+        public ownedPlanets(Planet planet, int attackingShips, List<planetDistance> attackablePlanets)
+        {
+            this.planet = planet;
+            this.attackingShips = attackingShips;
+            this.attackablePlanets = attackablePlanets;
+        }
+        public Planet planet { get; set; }
+        public int attackingShips { get; set; }
+        public List<planetDistance> attackablePlanets { get; set; }
+
+    };
+
+
+
     public class Agent : AgentBase
     {
         public Agent(string name, string endpoint) : base(name, endpoint) { }
@@ -45,11 +73,31 @@ namespace CSharpAgent
             if (targetPlanet == null) return; // WE OWN IT ALLLLLLLLL
 
             var targetList = new List<planetCost>();
+            var ownedPlanets = new List<ownedPlanets>();
 
             Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");
             foreach (var planet in gs.Planets.Where(p => p.OwnerId == MyId))
             {
+                var attackingShips = 0;
+                List<planetDistance> attackablePlanets = new List<planetDistance>();
+                foreach (var fleet in gs.Fleets.Where(p => (p.OwnerId == opplayer) && (p.DestinationPlanetId == planet.Id)))
+                {
+                    attackingShips += fleet.NumberOfShips;
+                }
+
+                foreach (var enemyplanet in gs.Planets.Where(p => p.OwnerId != MyId))
+                {
+                    var x = (enemyplanet.Position.X - planet.Position.X);
+                    var y = (enemyplanet.Position.Y - planet.Position.Y);
+
+                    var dist = Math.Sqrt((x * x) + (y * y));
+                    var planetDist = new planetDistance(enemyplanet.Id, dist);
+                    attackablePlanets.Add(planetDist);
+                }
+
+                attackablePlanets = attackablePlanets.OrderBy(o => o.dist).ToList();
                 ownedShips += planet.NumberOfShips;
+                ownedPlanets.Add(new ownedPlanets(planet, attackingShips, attackablePlanets));
             };
 
             // send half rounded down of our ships from each planet we do own
@@ -67,22 +115,22 @@ namespace CSharpAgent
 
             for (int i = targetList.Count - 1; i >= 0; i--)
             {
-                foreach (var planet in gs.Planets.Where(p => (p.OwnerId == MyId)))
+                foreach (var owned in ownedPlanets)
                 {
-                    var minHp = planet.GrowthRate + 1;
-                    if (planet.NumberOfShips > minHp)
+                    var minHp = owned.planet.GrowthRate + 1;
+                    if ((owned.planet.NumberOfShips > minHp) && (owned.attackingShips < minHp))
                     {
-                        int shipsToSend = planet.NumberOfShips - minHp;
+                        int shipsToSend = owned.planet.NumberOfShips - minHp;
 
-                        if (targetList[i].planet.NumberOfShips < planet.NumberOfShips - 1)
+                        if (targetList[i].planet.NumberOfShips < owned.planet.NumberOfShips - 1)
                         {
                             shipsToSend = targetList[i].planet.NumberOfShips + 1;
                         };
 
-                        if (planet.NumberOfShips >= minHp)
+                        if (owned.planet.NumberOfShips >= minHp)
                         {
-                            Console.WriteLine($"planet ships {planet.NumberOfShips} Amount sending {shipsToSend}");
-                            SendFleet(planet.Id, targetList[i].planet.Id, shipsToSend);
+                            Console.WriteLine($"planet ships {owned.planet.NumberOfShips} Amount sending {shipsToSend}");
+                            SendFleet(owned.planet.Id, targetList[i].planet.Id, shipsToSend);                           
                         };
                     };
 
