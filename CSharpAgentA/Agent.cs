@@ -27,6 +27,31 @@ namespace CSharpAgent
             // send half rounded down of our ships from each planet we do own
             foreach (var planet in gs.Planets.Where(p => p.OwnerId == MyId))
             {
+                // send to nearest planet
+                //
+                // find nearest planet
+
+                var planetsWeOwn = gs.Planets.Where(p => p.OwnerId == MyId);
+                
+                var notOwnedPlanets = gs.Planets.Where(p => p.OwnerId != MyId);
+                
+                
+                
+                double shortestDistance = double.MaxValue;
+                
+                foreach (var notOwnedPlanet in notOwnedPlanets)
+                {
+                    var distance = planet.Position.Distance(notOwnedPlanet.Position);
+                
+                    if (distance < shortestDistance)
+                    {
+                        shortestDistance = distance;
+                
+                        targetPlanet = notOwnedPlanet;
+                    }
+                    
+                }
+                
                 var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
                 if (ships > 0)
                 {
