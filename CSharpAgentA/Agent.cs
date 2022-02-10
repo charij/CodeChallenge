@@ -30,9 +30,7 @@ namespace CSharpAgent
             // send half rounded down of our ships from each planet we do own
             foreach (var planet in gs.Planets.Where(p => p.OwnerId == MyId))
             {
-                // send to nearest planet
-                //
-                // find nearest planet
+                
 
                 var planetsWeOwn = gs.Planets.Where(p => p.OwnerId == MyId);
 
@@ -43,20 +41,21 @@ namespace CSharpAgent
                 var ships = (int)Math.Floor(planet.NumberOfShips / 4.0);
 
                 var largestEnemyAttackFleet = gs.Fleets.Where(x => x.OwnerId != MyId).OrderBy(x => x.NumberOfShips).FirstOrDefault();
-                
-           
-                
 
-                if (largestEnemyAttackFleet != null && largestEnemyAttackFleet.DestinationPlanetId == planet.Id)
+                var shipsAttackingUs = gs.Fleets.Where(x => x.OwnerId != MyId)
+                    .Where(x => x.DestinationPlanetId == planet.Id).Select(x => x.NumberOfShips).Sum();
+                
+                
+                
+                if (shipsAttackingUs > 0)
                 {
-                    var differenceInShips = planet.NumberOfShips - largestEnemyAttackFleet.NumberOfShips;
-                    if (differenceInShips < 0)
+                    var differenceInShips = planet.NumberOfShips - shipsAttackingUs;
+                    if (differenceInShips < 1)
                     {
                         continue;
                     }
 
                     ships = differenceInShips;
-                    
                 }
                 
                 // if planet that the enemy is attacking is not ours
@@ -68,52 +67,66 @@ namespace CSharpAgent
 
                     targetPlanet = gs.Planets.First(x => x.Id == largestEnemyAttackFleet.SourcePlanetId);
 
-                    ships = planet.NumberOfShips - 1;
+                    ships = planet.NumberOfShips /4;
                     
-                }
-                
-                if (planet.NumberOfShips < 10)
-                {
-                    continue;
-                }
-                if (planet == bigBoy)
-                {
-
-                    //dont attack for 4 turns
-
-                    // if (turnsWaitedBigBoy < 5)
-                    // {
-                    //     turnsWaitedBigBoy++;
-                    //     continue;
-                    // }
-                    //attack biggest growth rate planet not owned by us
-
-                    turnsWaitedBigBoy = 0;
-                    
-                    targetPlanet = notOwnedPlanets.OrderBy(x => x.GrowthRate).Last();
-
-                    ships = planet.NumberOfShips - 1;
-
                 }
                 else
                 {
-
-                    double shortestDistance = double.MaxValue;
-                
-                    foreach (var notOwnedPlanet in notOwnedPlanets)
+                    if (planet.NumberOfShips < 10)
                     {
-                        var distance = planet.Position.Distance(notOwnedPlanet.Position);
+                        continue;
+                    }
+                    if (planet == bigBoy)
+                    {
+
+                        //dont attack for 4 turns
+
+                        // if (turnsWaitedBigBoy < 5)
+                        // {
+                        //     turnsWaitedBigBoy++;
+                        //     continue;
+                        // }
+                        //attack biggest growth rate planet not owned by us
+
+                        targetPlanet = notOwnedPlanets.OrderBy(x => x.GrowthRate).Last();
+
+                        ships = planet.NumberOfShips - 1;
+
+                    }
+                    else
+                    {
+
+                        var distances = new Dictionary<Planet, double>();
+
+                        double shortestDistance = double.MaxValue;
                 
-                        if (distance < shortestDistance)
+                        foreach (var notOwnedPlanet in notOwnedPlanets)
                         {
-                            shortestDistance = distance;
-                
-                            targetPlanet = notOwnedPlanet;
+                            var distance = planet.Position.Distance(notOwnedPlanet.Position);
+                        
+                            distances.Add(notOwnedPlanet, distance);
+                        
+                            // distances[planet] = distance;
+                        
+                        }
+
+                        var planetDistances = distances.OrderBy(x => x.Value).ToList();
+
+                        if (planetDistances.Count() > 1)
+                        {
+                            targetPlanet = planetDistances[0].Key.NumberOfShips < planetDistances[1].Key.NumberOfShips
+                                ? planetDistances[0].Key
+                                : planetDistances[1].Key;
+                        }
+                        else
+                        {
+                            targetPlanet = planetDistances.First().Key;
                         }
                     
                     }
-                    
                 }
+                
+                
                 
                 
                 
