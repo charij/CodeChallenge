@@ -26,9 +26,16 @@ namespace PlanetWars.Server
 
         private static int _MAXID = 0;
         private int _MAXPLAYERID = 1;
-        private int _MAXPLANETID = 0;
         private int _MAXFLEETID = 0;
-        private int _NUM_PLANETS = 3;
+
+        private int MIN_NUM_PLANETS = 3;
+        private int MAX_NUM_PLANETS = 10;
+        private int MIN_GROWTH_RATE = 1;
+        private int MAX_GROWTH_RATE = 10;
+        private int MIN_NUM_SHIPS = 0;
+        private int MAX_NUM_SHIPS = 100;
+        private int MAP_SIZE = 20;
+
         public static readonly long START_DELAY = 10000; // 5 seconds
         public static readonly long PLAYER_TURN_LENGTH = 700; // 200 ms
         public static readonly long SERVER_TURN_LENGTH = 200; // 200 ms
@@ -117,76 +124,48 @@ namespace PlanetWars.Server
 
         private void GenerateMap()
         {
-            
-            _planets.Add(new Planet()
-            {
-                Id = _MAXPLANETID++,
-                OwnerId = -1,
-                Position = new Point(0, 0),
-                NumberOfShips = 40,
-                GrowthRate = 5
-            });
+            int numPlanets = Random.Next(MIN_NUM_PLANETS, MAX_NUM_PLANETS),
+                numShips,
+                growthRate,
+                x,
+                y;
 
-            _planets.Add(new Planet()
+            for (var i = 0; i < numPlanets; i++)
             {
-                Id = _MAXPLANETID++,
-                OwnerId = -1,
-                Position = new Point(2, 2),
-                NumberOfShips = 10,
-                GrowthRate = 2
-            });
+                do
+                {
+                    numShips = Random.Next(MIN_NUM_SHIPS, MAX_NUM_SHIPS);
+                    growthRate = Random.Next(MIN_GROWTH_RATE, MAX_GROWTH_RATE);
+                    x = Random.Next(0, MAP_SIZE);
+                    y = Random.Next(0, MAP_SIZE);
+                }
+                while (Math.Abs(x - y) <= growthRate || _planets.Any(planet => planet.Position.Distance(new Point(x, y)) <= growthRate));
 
-            _planets.Add(new Planet()
-            {
-                Id = _MAXPLANETID++,
-                OwnerId = -1,
-                Position = new Point(8, 0),
-                NumberOfShips = 20,
-                GrowthRate = 3
-            });
-           
-            _planets.Add(new Planet()
-            {
-                Id = _MAXPLANETID++,
-                OwnerId = -1,
-                Position = new Point(0, 8),
-                NumberOfShips = 20,
-                GrowthRate = 3
-            });
-            _planets.Add(new Planet()
-            {
-                Id = _MAXPLANETID++,
-                OwnerId = -1,
-                Position = new Point(4, 4),
-                NumberOfShips = 100,
-                GrowthRate = 7
-            });
+                _planets.Add(new Planet()
+                {
+                    Id = i,
+                    OwnerId = -1,
+                    Position = new Point(x, y),
+                    NumberOfShips = numShips,
+                    GrowthRate = growthRate
+                });
 
-            _planets.Add(new Planet()
-            {
-                Id = _MAXPLANETID++,
-                OwnerId = -1,
-                Position = new Point(6, 6),
-                NumberOfShips = 10,
-                GrowthRate = 2
-            });
-
-            _planets.Add(new Planet()
-            {
-                Id = _MAXPLANETID++,
-                OwnerId = -1,
-                Position = new Point(8, 8),
-                NumberOfShips = 40,
-                GrowthRate = 5
-            });
+                _planets.Add(new Planet()
+                {
+                    Id = numPlanets + i,
+                    OwnerId = -1,
+                    Position = new Point(y, x),
+                    NumberOfShips = numShips,
+                    GrowthRate = growthRate
+                });
+            }
 
             _planets[0].OwnerId = 1;
-            _planets[_planets.Count - 1].OwnerId = 2;
+            _planets[1].OwnerId = 2;
         }
         
         public MoveResult MoveFleet(MoveRequest request)
         {
-
             var result = new MoveResult();
             
             // non-zero ships
