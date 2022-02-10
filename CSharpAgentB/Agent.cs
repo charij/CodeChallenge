@@ -17,7 +17,7 @@ namespace CSharpAgent
         public Planet planet { get; set; }
         public int cost { get; set; }
 
-    }
+    };
 
     public class Agent : AgentBase
     {
@@ -70,17 +70,21 @@ namespace CSharpAgent
                 foreach (var planet in gs.Planets.Where(p => (p.OwnerId == MyId)))
                 {
                     var minHp = planet.GrowthRate + 1;
-                    int shipsToSend = planet.NumberOfShips - minHp;
-
-                    if (targetList[i].planet.NumberOfShips < planet.NumberOfShips - 1)
+                    if (planet.NumberOfShips > minHp)
                     {
-                        shipsToSend = targetList[i].planet.NumberOfShips + 1;
-                    }
+                        int shipsToSend = planet.NumberOfShips - minHp;
 
-                    if (planet.NumberOfShips >= minHp)
-                    {
-                        SendFleet(planet.Id, targetList[i].planet.Id, shipsToSend);
-                    }
+                        if (targetList[i].planet.NumberOfShips < planet.NumberOfShips - 1)
+                        {
+                            shipsToSend = targetList[i].planet.NumberOfShips + 1;
+                        };
+
+                        if (planet.NumberOfShips >= minHp)
+                        {
+                            Console.WriteLine($"planet ships {planet.NumberOfShips} Amount sending {shipsToSend}");
+                            SendFleet(planet.Id, targetList[i].planet.Id, shipsToSend);                           
+                        };
+                    };
 
                 };
             }
