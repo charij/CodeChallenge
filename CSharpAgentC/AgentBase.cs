@@ -25,6 +25,7 @@ namespace CSharpAgent
         public string Name { get; set; }
         public int LastTurn { get; private set; }
         public int MyId { get; private set; }
+        public int OppId { get; private set; }
 
         public AgentBase(string name, string endpoint)
         {
@@ -63,6 +64,7 @@ namespace CSharpAgent
             AuthToken = result.AuthToken;
             GameId = result.GameId;
             MyId = result.Id;
+            OppId = result.Id == 1 ? 2 : 1;
             TimeToNextTurn = (long)result.GameStart.Subtract(DateTime.UtcNow).TotalMilliseconds;
             Console.WriteLine($"Your game Id is {result.GameId} auth {result.AuthToken} and starts in {TimeToNextTurn}ms");
             return result;

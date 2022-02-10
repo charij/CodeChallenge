@@ -7,39 +7,30 @@ namespace CSharpAgent
 {
     public class Agent : AgentBase
     {
-        internal class ScheduleMove
-        {
-            public int Turn { get; set; }
-            public int SourceId { get; set; }
-            public int TargetId { get; set; }
-            public int NumberOfShips { get; set; }
-        }
-
-        internal class PlanetPlan
-        {
-            public int ReservedShips { get; set; }
-        }
-
         public Agent(string name, string endpoint) : base(name, endpoint) { }
 
-        public int Value(StatusResult gs, Planet planet, Planet[] OurPlanets)
+        public int Value(StatusResult gs, Planet planet, IEnumerable<Planet> myPlanets)
         {
-            return planet.OwnerId == 0
-                ? ((200 - gs.CurrentTurn) * planet.GrowthRate) - planet.NumberOfShips
-                : ((200 - gs.CurrentTurn) * planet.GrowthRate) * 2;
+            return planet.OwnerId == OppId
+                ? ((200 - gs.CurrentTurn) * planet.GrowthRate * 2)
+                : ((200 - gs.CurrentTurn) * planet.GrowthRate) - planet.NumberOfShips;
         }
 
-        private StatusResult previousState;
-        private List<ScheduleMove> scheduledMoves = new List<ScheduleMove>();
-        private Dictionary<int, PlanetPlan> planetPlans;
+        public int ShipsNeeded(StatusResult gs, Planet source, Planet target)
+        {
+            var fleetOffset = gs.Fleets.Where(i => i.OwnerId == OppId && i.SourcePlanetId == target.Id).Sum(i => i.NumberOfShips) 
+                            - gs.Fleets.Where(i => i.OwnerId == MyId && i.SourcePlanetId == target.Id).Sum(i => i.NumberOfShips);
+
+            return target.OwnerId == OppId
+                ? (target.NumberOfShips + (target.GrowthRate * (int)Math.Ceiling(source.Position.Distance(target.Position))) + 1) - fleetOffset
+                : (target.NumberOfShips) - fleetOffset;
+        }
 
         public override void Update(StatusResult gs)
         {
             if (gs.CurrentTurn == 0)
             {
                 Console.WriteLine($"Turn {gs.CurrentTurn}\t Biding my time!");
-                previousState = gs;
-                planetPlans = gs.Planets.ToDictionary(i => i.Id, i => new PlanetPlan());
                 return;
             }
 
@@ -49,49 +40,17 @@ namespace CSharpAgent
                 return;
             }
 
-            // get opponents moves & counter based on value
-            var previousFleets = previousState.Fleets.Select(i => i.Id);
-            var opponentMoves = gs.Fleets.Where(i => !previousFleets.Contains(i.Id));
-            foreach (var move in opponentMoves)
-            {
-                // add scheduled moves
-
-            }
-
-            ExecuteScheduledMoves(gs);
-
-            // move all remaining ships to defend weakest & attack most valuable
             var myPlanets = gs.Planets.Where(i => i.OwnerId == MyId);
-            foreach (var planet in myPlanets)
+            var notMyPlanets = gs.Planets.Where(i => i.OwnerId != MyId);
+            var oppPlanets = gs.Planets.Where(i => i.OwnerId == OppId);
+            var neutralPlanets = gs.Planets.Where(i => i.OwnerId == -1);
+
+            foreach (var target in notMyPlanets.OrderByDescending(i => Value(gs, i, myPlanets)))
             {
-
-            }
-
-            previousState = gs;
-        }
-
-        private void ExecuteScheduledMoves(StatusResult gs)
-        {
-            var moves = scheduledMoves.Where(i => gs.CurrentTurn == i.Turn).ToArray();
-            foreach (var scheduleMove in moves)
-            {
-                var planet = gs.Planets.First(i => i.Id == scheduleMove.SourceId);
-
-                if (planet.OwnerId != MyId)
+                foreach (var source in myPlanets.OrderBy(i => i.Position.Distance(target.Position)))
                 {
-                    Console.WriteLine("\tLost the planet!");
+                    SendFleet(source.Id, target.Id, Math.Min(ShipsNeeded(gs, source, target), source.NumberOfShips));
                 }
-                else 
-                if (planet.NumberOfShips < scheduleMove.NumberOfShips)
-                {
-                    Console.WriteLine("\tNot enough ships to send!");
-                }
-                else
-                {
-                    SendFleet(scheduleMove.SourceId, scheduleMove.TargetId, scheduleMove.NumberOfShips);
-                }
-
-                scheduledMoves.Remove(scheduleMove);
             }
         }
     }

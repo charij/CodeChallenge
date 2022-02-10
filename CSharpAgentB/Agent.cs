@@ -82,7 +82,7 @@ namespace CSharpAgent
                         if (planet.NumberOfShips >= minHp)
                         {
                             Console.WriteLine($"planet ships {planet.NumberOfShips} Amount sending {shipsToSend}");
-                            SendFleet(planet.Id, targetList[i].planet.Id, shipsToSend);                           
+                            SendFleet(planet.Id, targetList[i].planet.Id, shipsToSend);
                         };
                     };
 
