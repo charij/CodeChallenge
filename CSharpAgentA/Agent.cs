@@ -22,8 +22,11 @@ namespace CSharpAgent
             var targetPlanet = gs.Planets.FirstOrDefault(p => p.OwnerId != MyId);
             if (targetPlanet == null) return; // WE OWN IT ALLLLLLLLL
 
-            Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");                       
+            Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");
 
+            var turnsWaitedBigBoy = 0;
+            var underAttackTurns = 0;
+            
             // send half rounded down of our ships from each planet we do own
             foreach (var planet in gs.Planets.Where(p => p.OwnerId == MyId))
             {
@@ -32,27 +35,89 @@ namespace CSharpAgent
                 // find nearest planet
 
                 var planetsWeOwn = gs.Planets.Where(p => p.OwnerId == MyId);
+
+                var bigBoy = gs.Planets.OrderBy(x => x.GrowthRate).Last();
                 
                 var notOwnedPlanets = gs.Planets.Where(p => p.OwnerId != MyId);
                 
+                var ships = (int)Math.Floor(planet.NumberOfShips / 4.0);
+
+                var largestEnemyAttackFleet = gs.Fleets.Where(x => x.OwnerId != MyId).OrderBy(x => x.NumberOfShips).FirstOrDefault();
                 
+           
                 
-                double shortestDistance = double.MaxValue;
-                
-                foreach (var notOwnedPlanet in notOwnedPlanets)
+
+                if (largestEnemyAttackFleet != null && largestEnemyAttackFleet.DestinationPlanetId == planet.Id)
                 {
-                    var distance = planet.Position.Distance(notOwnedPlanet.Position);
-                
-                    if (distance < shortestDistance)
+                    if (underAttackTurns > 5)
                     {
-                        shortestDistance = distance;
-                
-                        targetPlanet = notOwnedPlanet;
+                        underAttackTurns = 0;
+                    }else
+                    {
+                        underAttackTurns++;
+                        continue;
                     }
                     
                 }
                 
-                var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
+                // if planet that the enemy is attacking is not ours
+                
+                var enumerable = notOwnedPlanets.Any(x => largestEnemyAttackFleet != null && x.Id == largestEnemyAttackFleet.DestinationPlanetId);
+
+                if (largestEnemyAttackFleet != null && enumerable)
+                {
+
+                    targetPlanet = gs.Planets.First(x => x.Id == largestEnemyAttackFleet.SourcePlanetId);
+
+                    ships = planet.NumberOfShips - 1;
+                    
+                }
+                
+                if (planet.NumberOfShips < 10)
+                {
+                    continue;
+                }
+                if (planet == bigBoy)
+                {
+
+                    //dont attack for 4 turns
+
+                    // if (turnsWaitedBigBoy < 5)
+                    // {
+                    //     turnsWaitedBigBoy++;
+                    //     continue;
+                    // }
+                    //attack biggest growth rate planet not owned by us
+
+                    turnsWaitedBigBoy = 0;
+                    
+                    targetPlanet = notOwnedPlanets.OrderBy(x => x.GrowthRate).Last();
+
+                    ships = planet.NumberOfShips - 1;
+
+                }
+                else
+                {
+
+                    double shortestDistance = double.MaxValue;
+                
+                    foreach (var notOwnedPlanet in notOwnedPlanets)
+                    {
+                        var distance = planet.Position.Distance(notOwnedPlanet.Position);
+                
+                        if (distance < shortestDistance)
+                        {
+                            shortestDistance = distance;
+                
+                            targetPlanet = notOwnedPlanet;
+                        }
+                    
+                    }
+                    
+                }
+                
+                
+                
                 if (ships > 0)
                 {
                     SendFleet(planet.Id, targetPlanet.Id, ships);
