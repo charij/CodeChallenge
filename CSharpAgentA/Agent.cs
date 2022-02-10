@@ -49,22 +49,21 @@ namespace CSharpAgent
 
                 if (largestEnemyAttackFleet != null && largestEnemyAttackFleet.DestinationPlanetId == planet.Id)
                 {
-                    if (underAttackTurns > 5)
+                    var differenceInShips = planet.NumberOfShips - largestEnemyAttackFleet.NumberOfShips;
+                    if (differenceInShips < 0)
                     {
-                        underAttackTurns = 0;
-                    }else
-                    {
-                        underAttackTurns++;
                         continue;
                     }
+
+                    ships = differenceInShips;
                     
                 }
                 
                 // if planet that the enemy is attacking is not ours
                 
-                var enumerable = notOwnedPlanets.Any(x => largestEnemyAttackFleet != null && x.Id == largestEnemyAttackFleet.DestinationPlanetId);
+                var isNotAttackOurPlannets = notOwnedPlanets.Any(x => largestEnemyAttackFleet != null && x.Id == largestEnemyAttackFleet.DestinationPlanetId);
 
-                if (largestEnemyAttackFleet != null && enumerable)
+                if (largestEnemyAttackFleet != null && isNotAttackOurPlannets)
                 {
 
                     targetPlanet = gs.Planets.First(x => x.Id == largestEnemyAttackFleet.SourcePlanetId);
