@@ -14,7 +14,7 @@ namespace CSharpAgent
         private bool _isRunning = false;
         private readonly HttpClient _client = null;
 
-        private List<MoveRequest> _pendingMoveRequests = new List<MoveRequest>();
+        protected List<MoveRequest> _pendingMoveRequests = new List<MoveRequest>();
 
         protected long TimeToNextTurn { get; set; }
         protected int CurrentTurn { get; set; }
