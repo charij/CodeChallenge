@@ -21,7 +21,7 @@ namespace CSharpAgent
                 return (200 - gs.CurrentTurn) * planet.GrowthRate * 2 * (availableShips / Math.Max(1, planet.NumberOfShips));
 
             if (planet.OwnerId == MyId)
-                return (200 - gs.CurrentTurn) * planet.GrowthRate * 2 * (availableShips / Math.Max(1, planet.NumberOfShips));
+                return (200 - gs.CurrentTurn) * planet.GrowthRate * 5 * (availableShips / Math.Max(1, planet.NumberOfShips));
 
             else
                 return (((200 - gs.CurrentTurn) * planet.GrowthRate) - planet.NumberOfShips) * (availableShips / Math.Max(1, planet.NumberOfShips));
@@ -59,10 +59,7 @@ namespace CSharpAgent
                 foreach (var source in myPlanets.OrderBy(i => i.Position.Distance(target.Position)))
                 {
                     var fleets = Math.Min(ShipsNeeded(gs, source, target), source.NumberOfShips - _pendingMoveRequests.Where(i => i.SourcePlanetId == source.Id).Sum(i => i.NumberOfShips));
-                    if (fleets > 0)
-                    {
-                        SendFleet(source.Id, target.Id, fleets);
-                    }
+                    SendFleet(source.Id, target.Id, fleets);
                 }
             }
         }

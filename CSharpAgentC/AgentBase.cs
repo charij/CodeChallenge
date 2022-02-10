@@ -38,15 +38,18 @@ namespace CSharpAgent
 
         public void SendFleet(int sourcePlanetId, int destinationPlanetId, int numShips)
         {
-            var moveRequest = new MoveRequest()
+            if (numShips > 0)
             {
-                AuthToken = AuthToken,
-                GameId = GameId,
-                SourcePlanetId = sourcePlanetId,
-                DestinationPlanetId = destinationPlanetId,
-                NumberOfShips = numShips
-            };
-            _pendingMoveRequests.Add(moveRequest);
+                var moveRequest = new MoveRequest()
+                {
+                    AuthToken = AuthToken,
+                    GameId = GameId,
+                    SourcePlanetId = sourcePlanetId,
+                    DestinationPlanetId = destinationPlanetId,
+                    NumberOfShips = numShips
+                };
+                _pendingMoveRequests.Add(moveRequest);
+            }
         }
 
         protected async Task<LogonResult> Logon()
