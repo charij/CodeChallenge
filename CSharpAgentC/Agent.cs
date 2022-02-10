@@ -15,15 +15,16 @@ namespace CSharpAgent
             var oppPlanets = gs.Planets.Where(i => i.OwnerId == OppId);
             var neutralPlanets = gs.Planets.Where(i => i.OwnerId == -1);
 
-            //var fleetOffset = gs.Fleets.Where(i => i.OwnerId == OppId && i.SourcePlanetId == target.Id).Sum(i => i.NumberOfShips)
-            //                - gs.Fleets.Where(i => i.OwnerId == MyId && i.SourcePlanetId == target.Id).Sum(i => i.NumberOfShips);
-
             var availableShips = myPlanets.Sum(i => i.NumberOfShips);
 
-            return (planet.OwnerId == OppId
-                ? ((200 - gs.CurrentTurn) * planet.GrowthRate) * 2
-                : ((200 - gs.CurrentTurn) * planet.GrowthRate) - planet.NumberOfShips)
-                * (availableShips / planet.NumberOfShips);
+            if (planet.OwnerId == OppId)
+                return (200 - gs.CurrentTurn) * planet.GrowthRate * 2 * (availableShips / Math.Max(1, planet.NumberOfShips));
+
+            if (planet.OwnerId == MyId)
+                return (200 - gs.CurrentTurn) * planet.GrowthRate * 2 * (availableShips / Math.Max(1, planet.NumberOfShips));
+
+            else
+                return (((200 - gs.CurrentTurn) * planet.GrowthRate) - planet.NumberOfShips) * (availableShips / Math.Max(1, planet.NumberOfShips));
         }
 
         public int ShipsNeeded(StatusResult gs, Planet source, Planet target)
@@ -57,7 +58,11 @@ namespace CSharpAgent
             {
                 foreach (var source in myPlanets.OrderBy(i => i.Position.Distance(target.Position)))
                 {
-                    SendFleet(source.Id, target.Id, Math.Min(ShipsNeeded(gs, source, target), source.NumberOfShips - 1));
+                    var fleets = Math.Min(ShipsNeeded(gs, source, target), source.NumberOfShips - _pendingMoveRequests.Where(i => i.SourcePlanetId == source.Id).Sum(i => i.NumberOfShips));
+                    if (fleets > 0)
+                    {
+                        SendFleet(source.Id, target.Id, fleets);
+                    }
                 }
             }
         }
