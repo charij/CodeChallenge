@@ -57,7 +57,7 @@ namespace CSharpAgent
             {
                 foreach (var source in myPlanets.OrderBy(i => i.Position.Distance(target.Position)))
                 {
-                    SendFleet(source.Id, target.Id, Math.Min(ShipsNeeded(gs, source, target), source.NumberOfShips));
+                    SendFleet(source.Id, target.Id, Math.Min(ShipsNeeded(gs, source, target), source.NumberOfShips - 1));
                 }
             }
         }
