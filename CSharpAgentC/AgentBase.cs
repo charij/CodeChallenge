@@ -1,10 +1,8 @@
 ﻿using PlanetWars.Shared;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CSharpAgent
@@ -36,19 +34,28 @@ namespace CSharpAgent
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public void SendFleet(int sourcePlanetId, int destinationPlanetId, int numShips)
+        public void SendFleet(Planet source, Planet destination, int numShips)
         {
             if (numShips > 0)
-            {
-                var moveRequest = new MoveRequest()
+            {                
+                if (source.OwnerId == MyId)
                 {
-                    AuthToken = AuthToken,
-                    GameId = GameId,
-                    SourcePlanetId = sourcePlanetId,
-                    DestinationPlanetId = destinationPlanetId,
-                    NumberOfShips = numShips
-                };
-                _pendingMoveRequests.Add(moveRequest);
+                    var moveRequest = new MoveRequest()
+                    {
+                        AuthToken = AuthToken,
+                        GameId = GameId,
+                        SourcePlanetId = source.Id,
+                        DestinationPlanetId = destination.Id,
+                        NumberOfShips = numShips
+                    };
+                    _pendingMoveRequests.Add(moveRequest);
+                    
+                    Console.WriteLine($"attempted to send {numShips} ships from {source.Id} - {source.OwnerId} to {destination.Id} - {destination.OwnerId}!");
+                }
+                else
+                {
+                    Console.WriteLine($"Bad send from planet {source.Id}!");
+                }
             }
         }
 
