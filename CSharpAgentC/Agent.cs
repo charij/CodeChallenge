@@ -11,12 +11,6 @@ namespace CSharpAgent
 
         public override void Update(StatusResult gs)
         {
-            if (gs.CurrentTurn == 0)
-            {
-                Console.WriteLine("Biding my time!");
-                return;
-            }
-
             foreach (var target in gs.Planets.OrderByDescending(i => Value(gs, i)))
             foreach (var source in gs.MyPlanets(MyId).OrderBy(i => i.Distance(target)))
             {
@@ -38,9 +32,10 @@ namespace CSharpAgent
             var value = ((200 - (gs.CurrentTurn + turnsToCapture)) * planet.GrowthRate) - shipsNeeded;
 
             return planet.OwnerId > -1
-                ? value * 2
-                : value;
+                ? value = ((200 - (gs.CurrentTurn + turnsToCapture)) * planet.GrowthRate) * 2
+                : value = ((200 - (gs.CurrentTurn + turnsToCapture)) * planet.GrowthRate) - shipsNeeded;
         }
+
         public int ShipsNeeded(StatusResult gs, Planet source, Planet target)
         {
             var turnsToCapture = 1;
@@ -58,8 +53,7 @@ namespace CSharpAgent
                 - _pendingMoveRequests.Where(i => i.SourcePlanetId == source.Id)?.Sum(i => i.NumberOfShips) ?? 0 
                 + gs.Fleets.Where(i => i.OwnerId == MyId).Where(i => i.DestinationPlanetId == source.Id)?.Sum(i => i.NumberOfShips) ?? 0
                 - gs.Fleets.Where(i => i.OwnerId == OppId).Where(i => i.DestinationPlanetId == source.Id)?.Sum(i => i.NumberOfShips) ?? 0
-                + gs.Fleets.Where(i => i.OwnerId == OppId).Where(i => i.DestinationPlanetId == source.Id).Select(i => i.NumberOfTurnsToDestination)?.Min() ?? 0 * source.GrowthRate
-                ;
+                + gs.Fleets.Where(i => i.OwnerId == OppId).Where(i => i.DestinationPlanetId == source.Id).Select(i => i.NumberOfTurnsToDestination)?.Min() ?? 0 * source.GrowthRate;
 
             return Math.Min(shipsAvailable, shipsNeeded);
         }

@@ -162,6 +162,15 @@ namespace PlanetWars.Server
 
             _planets[0].OwnerId = 1;
             _planets[1].OwnerId = 2;
+
+            _planets.Add(new Planet()
+            {
+                Id = (numPlanets * 2) + 1,
+                OwnerId = -1,
+                Position = new Point(MAP_SIZE / 2, MAP_SIZE / 2),
+                NumberOfShips = Random.Next(MIN_NUM_SHIPS, MAX_NUM_SHIPS),
+                GrowthRate = Random.Next(MIN_GROWTH_RATE, MAX_GROWTH_RATE)
+            });
         }
         
         public MoveResult MoveFleet(MoveRequest request)
