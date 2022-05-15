@@ -24,7 +24,8 @@ namespace PlanetWars.Server
         {
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "Challenge.Service", Version = "v1" }));
             services.AddSignalR();
-            services.AddHostedService<GameCreationWorker>();
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
         }
 
         /// <summary>
@@ -40,14 +41,22 @@ namespace PlanetWars.Server
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Challenge.Service v1"));
             }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseRouting();            
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<GameHub>("/game");
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
+                //endpoints.MapHub<GameHub>("/game");
             });
         }
     }

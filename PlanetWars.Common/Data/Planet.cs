@@ -1,4 +1,4 @@
-﻿namespace PlanetWars.Common.Game.Data
+﻿namespace PlanetWars.Common.Data
 {
     using System;
 

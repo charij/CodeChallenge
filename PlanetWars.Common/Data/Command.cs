@@ -1,8 +1,8 @@
-﻿namespace PlanetWars.Common.Game.Comm
+﻿namespace PlanetWars.Common.Data
 {
     using System;
 
-    public class Command
+    public class Command 
     {
         public Guid SourcePlanetId { get; set; }
         

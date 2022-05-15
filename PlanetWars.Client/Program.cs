@@ -1,58 +1,86 @@
 ﻿namespace PlanetWars.Client
 {
-    using PlanetWars.Common.Comm;
-    using Microsoft.AspNetCore.SignalR.Client;
+    using Newtonsoft.Json;
+    using PlanetWars.Common.Data;
     using System;
-    using System.Threading;
+    using System.Net.Http;
+    using System.Net;
+    using System.Net.Http.Json;
 
     public class Program
     {
         public async static void Main(string[] args)
         {
-            try
+            var isRunning = true;
+            var endpoint = args?[0] ?? "http://127.0.0.1:8088/";
+            var profile = new Player
             {
-                var logon = new Logon(args);
+                Id = Guid.TryParse(args?[1] ?? string.Empty, out var id) ? id : Guid.NewGuid(),
+                Name = args?[2] ?? "Anonymous"
+            };
+            var gameId = args?[3] ?? "";
+            var gameSettings = new Settings();
 
-                var exitEvent = new ManualResetEvent(false);
-                var endpoint = args?[0] ?? "http://127.0.0.1:8088/";
-                var preferences = new Preferences
+            Console.CancelKeyPress += (sender, eventArgs) =>
+            {
+                eventArgs.Cancel = true;
+                isRunning = false;
+            };
+
+            using var httpClient = new HttpClient()
+            { 
+                BaseAddress = new Uri(endpoint), 
+                Timeout = new TimeSpan(0, 0, 30)
+            };
+
+            Console.Write($"Logging onto game server {endpoint}...");
+
+            var logonRequest = new HttpRequestMessage { Method = HttpMethod.Post, RequestUri = new Uri(@"\logon"), Content = JsonContent.Create(profile) };
+            var logonResponse = await httpClient.SendAsync(logonRequest);
+            if (logonResponse .StatusCode == HttpStatusCode.OK)
+            {
+                Console.WriteLine($"...logged on as {profile.Id} : {profile.Name}");
+
+                while (isRunning)
                 {
-                    Id   = args.Length >= 2 ? Guid.Parse(args[1]) : Guid.NewGuid(),
-                    Name = args.Length >= 3 ? args?[2] : "Anonymous",
-                    Game = args.Length >= 4 ? Guid.Parse(args[3]) : Guid.Parse("")
-                };
+                    Console.Write("Requesting game...");
 
-                var bot = new Bot();
+                    var gameRequest = new HttpRequestMessage { Method = HttpMethod.Post, RequestUri = new Uri(@$"\join?gameId={gameId}"), Content = JsonContent.Create(gameSettings) };
+                    var gameResponse = await httpClient.SendAsync(gameRequest);
+                    if (gameResponse.StatusCode == HttpStatusCode.OK)
+                    {
+                        Console.WriteLine($"...game Found!");
 
-                Console.CancelKeyPress += (sender, eventArgs) =>
-                {
-                    eventArgs.Cancel = true;
-                    exitEvent.Set();
-                };
+                        var rawGame = await gameResponse.Content.ReadAsStringAsync();
+                        var game = JsonConvert.DeserializeObject<GameDetails>(rawGame);
+                        var bot = new Bot(profile, game);
 
-                var connection = new HubConnectionBuilder()
-                    .WithUrl(endpoint)
-                    .WithAutomaticReconnect()
-                    .Build();
+                        while (!game.IsGameOver)
+                        {
+                            Console.WriteLine($"\n\tGame {game.Id} Turn {game.History.Count - 1}\n");
 
-                connection.On<string>("Update", async (state) => await connection.InvokeAsync("Submit", await bot.Process(state)));
-                connection.On<string>("GameOver", (message) => { Console.WriteLine(message); exitEvent.Set(); });
-                
-                Console.WriteLine("Connecting to game server...");
-                await connection.StartAsync();
+                            var commands = bot.CalculateMovesForTurn();
+                            var updateRequest = new HttpRequestMessage { Method = HttpMethod.Post, RequestUri = new Uri(@$"\submit\{game.Id}"), Content = JsonContent.Create(commands) };
+                            var updateResponse = await httpClient.SendAsync(updateRequest);
+                            if (updateResponse.StatusCode != HttpStatusCode.OK)
+                            {
+                                Console.WriteLine($"\tError(s) occurred with submitted commands:\n{updateResponse.ReasonPhrase}");
+                            }
 
-                Console.WriteLine("Requesting game...");
-                await connection.InvokeAsync("SetPreferences", preferences);
-
-                Console.WriteLine("awaiting game start...");
-                exitEvent.WaitOne();
-
-                Console.WriteLine("Disconnecting from game server.");                
-                await connection.StopAsync();
+                            var rawUpdate = await updateResponse.Content.ReadAsStringAsync();
+                            var update = JsonConvert.DeserializeObject<State>(rawUpdate);
+                            game.History.Add(update);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("...timed out, no match found!");
+                    }
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine($"{logonResponse.StatusCode} Failed to Logon: {logonResponse.ReasonPhrase}");
             }
         }
     }

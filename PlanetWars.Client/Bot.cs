@@ -1,50 +1,61 @@
 ﻿namespace PlanetWars.Client
 {
-    using Newtonsoft.Json;
-    using System;
+    using PlanetWars.Common.Data;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
 
+    /// <summary>
+    /// AI Bot
+    /// </summary>
     public class Bot
     {
-        private readonly Settings settings;
+        private readonly Player profile;
+        private readonly GameDetails gameState;
 
-        public Bot(Settings settings) 
+        /// <summary>
+        /// Creates an instance of this object
+        /// </summary>
+        /// <param name="profile">The player profile of the logged on client</param>
+        /// <param name="gameState">Contains all relevant information for the game</param>
+        public Bot(Player profile, GameDetails gameState)
         {
-            this.settings = settings;
+            this.profile = profile;
+            this.gameState = gameState;
         }
 
-        public Task<string> Process(string gameState, CancellationToken token)
+        /// <summary>
+        /// Current Plan is to send all spare ships from planets we own to a single one that we don't
+        /// </summary>
+        /// <returns>Commands for the turn</returns>
+        public Command[] CalculateMovesForTurn()
         {
-            var gs = JsonConvert.DeserializeObject<State>(gameState);
-            var moves = new List<MoveRequest>();
+            var currentTurn  = gameState.History.Count - 1;
+            var currentState = gameState.History[currentTurn];
+            var moves = new List<Command>();
 
-            Console.WriteLine($"[{DateTime.Now.ToShortTimeString()}]Current Turn: {gs.CurrentTurn}");
-            Console.WriteLine($"Owned Planets: {string.Join(", ", gs.Planets.Where(p => p.OwnerId == gs.MyId).Select(p => p.Id))}");
+            var myPlanets    = currentState.Planets.Where(p => p.OwnerId == profile.Id);
+            var targetPlanet = currentState.Planets.Where(p => p.OwnerId != profile.Id).FirstOrDefault();
 
-            var targetPlanet = gs.Planets.FirstOrDefault(p => p.OwnerId != gs.MyId);
-            if (targetPlanet != null)
+            if (!myPlanets.Any() || targetPlanet == null)
             {
-                Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");
+                return moves.ToArray();
+            }
 
-                foreach (var planet in gs.Planets.Where(p => p.OwnerId == gs.MyId))
+            foreach (var planet in myPlanets)
+            {
+                var spareShips = planet.ShipCount - 1;
+                if (spareShips > 0)
                 {
-                    var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
-                    if (ships > 0)
+                    moves.Add(new Command
                     {
-                        moves.Add(new MoveRequest
-                        {
-                            SourcePlanetId = planet.Id,
-                            DestinationPlanetId = targetPlanet.Id,
-                            NumberOfShips = ships
-                        });
-                    }
+                        SourcePlanetId = planet.Id,
+                        TargetPlanetId = targetPlanet.Id,
+                        ShipCount = spareShips
+                    });
                 }
             }
 
-            return Task.FromResult(JsonConvert.SerializeObject(moves));
+            return moves.ToArray();
         }
     }
 }

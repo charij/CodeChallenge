@@ -1,7 +1,7 @@
-﻿namespace PlanetWars.Common.Game
+﻿namespace PlanetWars.Common
 {
-    using PlanetWars.Common.Game.Comm;
-    using PlanetWars.Common.Game.Data;
+    using PlanetWars.Common.Comm;
+    using PlanetWars.Common.Data;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -153,14 +153,14 @@
                             SourcePlanetId = command.SourcePlanetId,
                             TargetPlanetId = command.TargetPlanetId,
                             ShipCount = command.ShipCount,
-                            TurnCreated = gameState.CurrentTurn
+                            TurnCreated = gameState.TurnNumber
                         });
                     }
                 }
 
                 // Planet Battles
                 var completedFleets = gameState.Fleets
-                    .Where(i => gameState.CurrentTurn - i.TurnCreated >= i.TravelTime)
+                    .Where(i => gameState.TurnNumber - i.TurnCreated >= i.TravelTime)
                     .GroupBy(i => i.TargetPlanetId);
 
                 foreach (var fleet in completedFleets)
@@ -198,11 +198,11 @@
 
                 // Check game over conditions
                 gameState.IsGameOver =
-                       gameState.CurrentTurn >= gameState.Settings.TurnLimit
+                       gameState.TurnNumber >= gameState.Settings.TurnLimit
                     || gameState.Planets.Where(i => i.OwnerId != Guid.Empty).Distinct().Count() <= 1;
 
                 // Complete Turn
-                gameState.CurrentTurn += 1;
+                gameState.TurnNumber += 1;
                 return gameState;
             }
         }

@@ -21,8 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpAgentC", "CSharpAgent
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Archive", "Archive", "{D619E862-8E85-400F-B62B-37CACCF1C875}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{7E5D4F04-C478-4971-AAEC-BF1868758E24}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{663737BB-44EE-4D3B-99B0-46ABF77C86DC}"
 	ProjectSection(SolutionItems) = preProject
 		readme.md = readme.md
@@ -68,10 +66,6 @@ Global
 		{D8D3D403-D1F6-477A-8CFC-BE3110E2ABD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8D3D403-D1F6-477A-8CFC-BE3110E2ABD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8D3D403-D1F6-477A-8CFC-BE3110E2ABD5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E5D4F04-C478-4971-AAEC-BF1868758E24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E5D4F04-C478-4971-AAEC-BF1868758E24}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E5D4F04-C478-4971-AAEC-BF1868758E24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E5D4F04-C478-4971-AAEC-BF1868758E24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3761F705-2F78-4B05-9D9B-E70DEF5A7BBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3761F705-2F78-4B05-9D9B-E70DEF5A7BBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3761F705-2F78-4B05-9D9B-E70DEF5A7BBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
