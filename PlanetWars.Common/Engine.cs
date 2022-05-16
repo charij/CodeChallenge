@@ -1,6 +1,5 @@
 ﻿namespace PlanetWars.Common
 {
-    using PlanetWars.Common.Comm;
     using PlanetWars.Common.Data;
     using System;
     using System.Collections.Generic;
@@ -8,19 +7,26 @@
 
     public class Engine
     {
-        private readonly object commandLock = new();
+        private readonly GameDetails gameDetails;
         private readonly Dictionary<Guid, Command[]> commandBuffer = new();
-        private readonly State gameState;
+        private readonly object commandLock = new();
 
         public Engine(Settings settings, List<Player> players)
         {
-            gameState = GenerateMap(settings, players);
+            gameDetails = new GameDetails 
+            { 
+                Id = Guid.NewGuid(),
+                Players = players,
+                Settings = settings
+            };
+            gameDetails.History.Add(GenerateInitialState());
         }
 
-        public State GenerateMap(Settings settings, List<Player> players)
+        public State GenerateInitialState()
         {
+            var settings = gameDetails.Settings;
             var rng = new Random(settings.Seed);
-            var state = new State { Settings = settings, Players = players };
+            var state = new State();
             var planetsPerSlice = rng.Next(settings.MinPlanetCount, settings.MaxPlanetCount);
 
             for (var i = 0; i < planetsPerSlice; i++)
@@ -34,7 +40,7 @@
                 do
                 {
                     r = rng.Next(settings.MinRadius, settings.MaxRadius);
-                    t = rng.NextDouble() * 2 * Math.PI / players.Count;
+                    t = rng.NextDouble() * 2 * Math.PI / gameDetails.Players.Count;
                     p = new Point
                     {
                         X = (int)Math.Round(r * Math.Cos(t)),
@@ -43,18 +49,18 @@
                 }
                 while (state.Planets.Any(i => p.Distance(i.Position) < 2 * settings.MaxPlanetGrowthRate));
 
-                for (var j = 0; j < players.Count; j++)
+                for (var j = 0; j < gameDetails.Players.Count; j++)
                 {
                     state.Planets.Add(new Planet
                     {
                         Id = Guid.NewGuid(),
-                        OwnerId = i == 0 ? players[j].Id : Guid.Empty,
+                        OwnerId = i == 0 ? gameDetails.Players[j].Id : Guid.Empty,
                         GrowthRate = rng.Next(settings.MinPlanetGrowthRate, settings.MaxPlanetGrowthRate),
                         ShipCount = rng.Next(settings.MinPlanetShips, settings.MaxPlanetShips),
                         Position = new Point
                         {
-                            X = (int)Math.Round(r * Math.Cos((t + (Math.PI * 2 * j / players.Count)) % (Math.PI * 2))),
-                            Y = (int)Math.Round(r * Math.Sin((t + (Math.PI * 2 * j / players.Count)) % (Math.PI * 2)))
+                            X = (int)Math.Round(r * Math.Cos((t + (Math.PI * 2 * j / gameDetails.Players.Count)) % (Math.PI * 2))),
+                            Y = (int)Math.Round(r * Math.Sin((t + (Math.PI * 2 * j / gameDetails.Players.Count)) % (Math.PI * 2)))
                         }
                     });
                 }
@@ -76,15 +82,17 @@
             return state;
         }
 
-        public CommandResult SubmitCommands(Guid playerId, Command[] commands)
+        public string SubmitCommands(Guid playerId, Command[] commands)
         {
-            var result = new CommandResult();
+            var errors = string.Empty;
 
             lock (commandLock)
             {
+                var gameState = gameDetails.History.Last();
+
                 if (commandBuffer.ContainsKey(playerId))
                 {
-                    result.Message = Environment.NewLine + $"Player {playerId} has already submitted commands this turn.";
+                    errors = Environment.NewLine + $"Player {playerId} has already submitted commands this turn.";
                 }
                 else
                 {
@@ -94,22 +102,22 @@
                     {
                         if (!planets.TryGetValue(command.SourcePlanetId, out var sourcePlanet))
                         {
-                            result.Message = string.Join(Environment.NewLine, result.Message, $"Source planet {command.SourcePlanetId} does not exist.");
+                            errors = string.Join(Environment.NewLine, errors, $"Source planet {command.SourcePlanetId} does not exist.");
                         }
                         else
                         if (!planets.TryGetValue(command.TargetPlanetId, out var targetPlanet))
                         {
-                            result.Message = string.Join(Environment.NewLine, $"Target planet {command.TargetPlanetId} does not exist.");
+                            errors = string.Join(Environment.NewLine, errors, $"Target planet {command.TargetPlanetId} does not exist.");
                         }
                         else
                         if (sourcePlanet.OwnerId != playerId)
                         {
-                            result.Message = string.Join(Environment.NewLine, $"Source planet {command.SourcePlanetId} is not owned by player {playerId}.");
+                            errors = string.Join(Environment.NewLine, errors, $"Source planet {command.SourcePlanetId} is not owned by player {playerId}.");
                         }
                         else
                         if (sourcePlanet.ShipCount < command.ShipCount)
                         {
-                            result.Message = string.Join(Environment.NewLine, $"Source planet {command.SourcePlanetId} does not enough ships for {command.ShipCount}");
+                            errors = string.Join(Environment.NewLine, errors, $"Source planet {command.SourcePlanetId} does not enough ships for {command.ShipCount}");
                         }
                         else
                         {
@@ -117,20 +125,22 @@
                         }
                     }
 
-                    if (!result.Errors.Any())
+                    if (string.IsNullOrEmpty(errors))
                     {
                         commandBuffer[playerId] = commands;
                     }
                 }
             }
 
-            return result;
+            return errors;
         }
 
         public State ProcessTurn()
         {
             lock (commandLock)
             {
+                var gameState = gameDetails.History.Last();
+
                 // Grow Planets
                 foreach (var planet in gameState.Planets)
                 {
@@ -197,8 +207,8 @@
                 }
 
                 // Check game over conditions
-                gameState.IsGameOver =
-                       gameState.TurnNumber >= gameState.Settings.TurnLimit
+                gameDetails.IsGameOver =
+                       gameState.TurnNumber >= gameDetails.Settings.TurnLimit
                     || gameState.Planets.Where(i => i.OwnerId != Guid.Empty).Distinct().Count() <= 1;
 
                 // Complete Turn

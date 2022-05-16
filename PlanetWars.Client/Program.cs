@@ -1,25 +1,41 @@
 ﻿namespace PlanetWars.Client
 {
+    using Microsoft.Extensions.Configuration;
     using Newtonsoft.Json;
     using PlanetWars.Common.Data;
     using System;
-    using System.Net.Http;
+    using System.IO;
     using System.Net;
+    using System.Net.Http;
     using System.Net.Http.Json;
+    using System.Threading.Tasks;
 
     public class Program
     {
-        public async static void Main(string[] args)
+        public static void Main()
         {
-            var isRunning = true;
-            var endpoint = args?[0] ?? "http://127.0.0.1:8088/";
-            var profile = new Player
+            try
             {
-                Id = Guid.TryParse(args?[1] ?? string.Empty, out var id) ? id : Guid.NewGuid(),
-                Name = args?[2] ?? "Anonymous"
-            };
-            var gameId = args?[3] ?? "";
-            var gameSettings = new Settings();
+                Run().Wait();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+            }
+        }
+
+        public static async Task Run()
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false)
+                .Build();
+
+            var endpoint = config.GetValue<string>("Client:ServerUri");
+            var gameId = config.GetValue<string>("Client:LobbyId");
+            var gameSettings = config.GetSection("LobbySettings").Get<Settings>();
+            var profile = config.GetSection("Profile").Get<Player>();
+            var isRunning = true;
 
             Console.CancelKeyPress += (sender, eventArgs) =>
             {

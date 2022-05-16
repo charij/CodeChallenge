@@ -1,31 +1,32 @@
 ﻿namespace PlanetWars.Controllers
 {
     using System;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using PlanetWars.Common.Data;
 
-    public class GamesController : Controller
+    [Controller]
+    public class GameController : Controller
     {
         private readonly GameManager _gameManager;
 
-        public GamesController()
+        public GameController()
         {
             _gameManager = GameManager.Instance;
         }
         
-        [HttpPost]
-        [Route("logon")]
+        [AllowAnonymous]
+        [HttpPost("logon")]
         public ActionResult Logon(Player profile)
         {
         }
 
-        [HttpPost]
-        [Route("join")]
+        [HttpPost("join")]
         public ActionResult<GameDetails> Join(string gameId, Settings settings)
         {
-            if (Guid.TryParse(gameId, out var id))
+            if (!string.IsNullOrEmpty(gameId) && Guid.TryParse(gameId, out var id))
             {
-                // attempt to join a game
+                // attempt to join a game / league
             }
             else
             if (settings == null)
@@ -34,12 +35,11 @@
             }
             else 
             {
-                // practice game against bot
+                // join a random lobby game
             }
         }
 
-        [HttpPost]
-        [Route("submit")]
+        [HttpPost("submit")]
         public ActionResult<State> Move(Guid gameId, Command[] commands)
         {
         }
