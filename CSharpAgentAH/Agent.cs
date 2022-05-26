@@ -31,7 +31,7 @@ namespace CSharpAgent
             }
 
             var friendlyPlanets = allPlanets
-                .Where(x => x.ExcessShips > 0)
+                //.Where(x => x.ExcessShips > 0)
                 .Where(x => x.Status == PlanetStatus.Friendly)
                 .ToList();
 
