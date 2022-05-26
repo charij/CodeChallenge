@@ -15,7 +15,7 @@ Some planets are closer, others are further away. Some planets produce more ship
 The game is over when:
 
 * All of the planets have been colonized by a player
-* All of you opponents ships have been destroyed
+* All of your opponent's ships have been destroyed
 * The max number of turns is reached player with the most ships wins
 
 The game is a draw when:
@@ -35,7 +35,7 @@ The number of turns it takes a fleet to travel from a source planet to a destina
 
 To colonize a planet, ships must be sent in fleets in order to outnumber the current player's ships on the planet (neutral or hostile). However, once a fleet of ships is sent to another planet it cannot be stopped until it reaches its destination. Fleets sent will battle enemy ships and cancel out one for one. The player with ships left after battling has successfully colonized the planet.
 
-Once you a planet is colonized it will begin producing ships every turn based on the growth rate of the planet, which can they be used to colonize more planets.
+Once a planet is colonized it will begin producing ships every turn based on the growth rate of the planet, which can they be used to colonize more planets.
 
 #### Simulation Phases In Order
 

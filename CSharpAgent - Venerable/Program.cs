@@ -8,6 +8,8 @@ namespace CSharpAgent
 {
     class Program
     {
+        public static string teamName = "Venerable";
+            
         static void Main(string[] args)
         {
             // Arg parsing
@@ -15,7 +17,7 @@ namespace CSharpAgent
             var nameIndex = args.ToList().Select(a => a.ToLower()).ToList().IndexOf("-name");
             
             var endpoint = args.Length > endpointIndex + 1 ? args[endpointIndex + 1] : "http://localhost:52802/";
-            var name = args.Length > nameIndex + 1 ? args[nameIndex + 1] : "Dave";
+            var name = args.Length > nameIndex + 1 ? args[nameIndex + 1] : teamName;
 
             // Start Agent            
             var agent = new Agent(name, endpoint);
