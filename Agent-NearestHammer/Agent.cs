@@ -33,27 +33,51 @@ namespace CSharpAgent
             }
 
             if (targetPlanet == null)
-            {   // otherwise pick a _random_ planet we don't own
-                var otherPlanets = gameState.Planets.Where(p => p.OwnerId != MyId).ToList();
-                if (!otherPlanets.Any()) return;
+            {   // otherwise pick the _nearest_ planet we don't own
 
-                int iTarget = new Random().Next(otherPlanets.Count());
-                targetPlanet = otherPlanets[iTarget];
+                var nearestOtherPlanet = NearestToMe(gameState);
+                if (nearestOtherPlanet == null) return;
 
+                targetPlanet = nearestOtherPlanet;
                 currentTargetId = targetPlanet.Id;
             }
 
             Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");                       
 
-            // send half rounded down of our ships from each planet we do own
+            // send our ships from each planet we do own
             foreach (var planet in gameState.Planets.Where(p => p.OwnerId == MyId))
             {
-                var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
+                var ships = planet.NumberOfShips - 1;
                 if (ships > 0)
                 {
                     SendFleet(planet.Id, targetPlanet.Id, ships);
                 }
             }
+        }
+
+        public Planet NearestToMyFirst(StatusResult gameState)
+        {
+            var myFirstPlanet = gameState.Planets.FirstOrDefault(p => p.OwnerId == MyId);
+            if (myFirstPlanet == null) return null;
+
+            var nearestOtherPlanet = gameState.Planets.Where(p => p.OwnerId != MyId).OrderBy(p => p.Position.Distance(myFirstPlanet.Position)).FirstOrDefault();
+
+            return nearestOtherPlanet;
+        }
+
+        public double TotalDistance(Planet target, IEnumerable<Planet> planets)
+        {
+            return planets.Sum(p => p.Position.Distance(target.Position));
+        }
+
+        public Planet NearestToMe(StatusResult gameState)
+        {
+            var myPlanets = gameState.Planets.Where(p => p.OwnerId == MyId);
+            if (!myPlanets.Any()) return null;
+
+            var nearestOtherPlanet = gameState.Planets.Where(p => p.OwnerId != MyId).OrderBy(p => TotalDistance(p, myPlanets)).FirstOrDefault();
+
+            return nearestOtherPlanet;
         }
     }
 }

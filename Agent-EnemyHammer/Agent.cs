@@ -20,19 +20,16 @@ namespace CSharpAgent
             Console.WriteLine($"[{DateTime.Now.ToShortTimeString()}] Current Turn: {gameState.CurrentTurn}");
             Console.WriteLine($"Owned Planets: {string.Join(", ", gameState.Planets.Where(p => p.OwnerId == MyId).Select(p =>  p.Id))}");
 
-            // find a _random_ planet we don't own
-            var otherPlanets = gameState.Planets.Where(p => p.OwnerId != MyId).ToList();
-            if (!otherPlanets.Any()) return;
-
-            int iTarget = new Random().Next(otherPlanets.Count());
-            var targetPlanet = otherPlanets[iTarget];
+            // find the first planet we don't own
+            var targetPlanet = gameState.Planets.FirstOrDefault(p => p.OwnerId != MyId && p.OwnerId != -1);
+            if (targetPlanet == null) return;
 
             Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");                       
 
-            // send half rounded down of our ships from each planet we do own
+            // send available ships from each planet we own
             foreach (var planet in gameState.Planets.Where(p => p.OwnerId == MyId))
             {
-                var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
+                var ships = planet.NumberOfShips - 1;
                 if (ships > 0)
                 {
                     SendFleet(planet.Id, targetPlanet.Id, ships);

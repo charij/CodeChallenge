@@ -33,15 +33,13 @@ namespace CSharpAgent
             }
 
             if (targetPlanet == null)
-            {   // otherwise pick the _nearest_ planet we don't own
+            {   // otherwise pick a _random_ planet we don't own
+                var otherPlanets = gameState.Planets.Where(p => p.OwnerId != MyId).ToList();
+                if (!otherPlanets.Any()) return;
 
-                var myFirstPlanet = gameState.Planets.FirstOrDefault(p => p.OwnerId == MyId);
-                if (myFirstPlanet == null) return;
+                int iTarget = new Random().Next(otherPlanets.Count());
+                targetPlanet = otherPlanets[iTarget];
 
-                var nearestOtherPlanet = gameState.Planets.Where(p => p.OwnerId != MyId).OrderBy(p => p.Position.Distance(myFirstPlanet.Position)).FirstOrDefault();
-                if (nearestOtherPlanet == null) return;
-
-                targetPlanet = nearestOtherPlanet;
                 currentTargetId = targetPlanet.Id;
             }
 
@@ -50,7 +48,7 @@ namespace CSharpAgent
             // send half rounded down of our ships from each planet we do own
             foreach (var planet in gameState.Planets.Where(p => p.OwnerId == MyId))
             {
-                var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
+                var ships = planet.NumberOfShips - 1;
                 if (ships > 0)
                 {
                     SendFleet(planet.Id, targetPlanet.Id, ships);
