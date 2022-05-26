@@ -44,10 +44,10 @@ namespace CSharpAgent
 
             Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");                       
 
-            // send half rounded down of our ships from each planet we do own
+            // send our ships from each planet we do own
             foreach (var planet in gameState.Planets.Where(p => p.OwnerId == MyId))
             {
-                var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
+                var ships = planet.NumberOfShips - 1;
                 if (ships > 0)
                 {
                     SendFleet(planet.Id, targetPlanet.Id, ships);
