@@ -20,58 +20,51 @@ namespace CSharpAgent
             Console.WriteLine($"[{DateTime.Now.ToShortTimeString()}] Current Turn: {gameState.CurrentTurn}");
             Console.WriteLine($"Owned Planets: {string.Join(", ", gameState.Planets.Where(p => p.OwnerId == MyId).Select(p => p.Id))}");
 
-            var freePlanets = GetFreePlanets(gameState.Planets);
-            var occupiedPlanets = GetOccupiedPlanets(gameState.Planets, MyId);
+            var freePlanets = gameState.Planets.Where(p => p.OwnerId == -1);
+            var occupiedPlanets = gameState.Planets.Where(p => p.OwnerId != -1 && p.OwnerId != MyId);
 
-            var targetPlanet = occupiedPlanets.FirstOrDefault();
+            var turnsLeft = 200 - gameState.CurrentTurn;
+
+            var targetPlanet = freePlanets.FirstOrDefault(); ;
             if (targetPlanet == null)
-                targetPlanet = freePlanets.FirstOrDefault();
-            if (targetPlanet == null) return;
+                targetPlanet = occupiedPlanets.FirstOrDefault();
+                if (targetPlanet == null) return;
 
-            //Console.WriteLine($"Target Planet: {targetPlanet.Id}:{targetPlanet.NumberOfShips}");
+            var planetsWeOwn = gameState.Planets.Where(p => p.OwnerId == MyId).OrderByDescending(p => p.NumberOfShips);
 
-            foreach (var planet in gameState.Planets.Where(p => p.OwnerId == MyId))
+            foreach (var planet in planetsWeOwn)
             {
-                //var closestFree = FindClosestPlanet(planet, freePlanets);
-                //var closestOccupied = FindClosestPlanet(planet, occupiedPlanets);
+                // ATTACK
+                var cost = (targetPlanet.NumberOfShips + ((int)Math.Floor(planet.Position.Distance(targetPlanet.Position)) * targetPlanet.GrowthRate) )+ 1;
 
-                //var targetPlanet = closestFree;
                 var ships = (int)Math.Floor(planet.NumberOfShips / 2.0);
                 if (ships > 0)
                 {
                     SendFleet(planet.Id, targetPlanet.Id, ships);
                 }
+
+                //DEFENSE
+                var allies = planetsWeOwn.OrderBy(x => x.Position.Distance(planet.Position));
+
+                var totalShipsComingForUs = gameState.Fleets.Where(x => x.OwnerId != MyId).Where(x => x.DestinationPlanetId == planet.Id).Select(x => x.NumberOfShips).Sum();
+
+                var differential = totalShipsComingForUs - planet.NumberOfShips;
+
+                foreach (var ally in allies)
+                {
+                    if (differential > 0)
+
+                    {
+                        Console.WriteLine("Defensive Manuavres");
+                        var aidingShips = (int)Math.Floor(ally.NumberOfShips / 4.0);
+
+                        // Send backup
+                        SendFleet(ally.Id, planet.Id, aidingShips);
+                        differential = differential - aidingShips;
+                    }
+                }
+
             }
-        }
-
-        public static List<Planet> GetFreePlanets(List<Planet> planets)
-        {
-            var freePlanets = planets.Where(p => p.OwnerId == -1);
-            if (freePlanets != null)
-            {
-                var orderedFreePlanets = freePlanets.OrderByDescending(fp => fp.GrowthRate / fp.NumberOfShips);
-                return orderedFreePlanets.ToList();
-            }
-
-            return new List<Planet>(); 
-        }
-
-        public static List<Planet> GetOccupiedPlanets(List<Planet> planets, int myId)
-        {
-            var occupiedPlanets = planets.Where(p => p.OwnerId != myId);
-            if (occupiedPlanets != null)
-            {
-                var orderedOP = occupiedPlanets.OrderByDescending(op => op.GrowthRate / op.NumberOfShips);
-
-                return orderedOP.ToList();
-            }
-            return new List<Planet>();
-        }
-
-        public static Planet FindClosestPlanet(Planet sourcePlanet,  List<Planet> destinationPlanets)
-        {
-            var planetsByDistance = destinationPlanets.OrderBy(dp => sourcePlanet.Position.Distance(dp.Position));
-            return planetsByDistance.FirstOrDefault();
         }
     }
 }
