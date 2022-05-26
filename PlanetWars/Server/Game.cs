@@ -21,7 +21,6 @@ namespace PlanetWars.Server
 
     public class Game : IGame
     {
-
         // todo planet generation
 
         private static int _MAXID = 0;
@@ -81,8 +80,6 @@ namespace PlanetWars.Server
             }
         }
 
-
-
         public Game()
         {
             if (Random == null)
@@ -94,6 +91,7 @@ namespace PlanetWars.Server
 
             Turn = 0;
             Running = false;
+            Waiting = true;
             _gameLoop = new HighFrequencyTimer(60, this.Update);
             GenerateMap();
 
@@ -111,7 +109,6 @@ namespace PlanetWars.Server
         {
             this._planets = planets;
         }
-
         public void SetFleets(List<Fleet> fleets)
         {
             this._fleets = fleets;
@@ -192,7 +189,6 @@ namespace PlanetWars.Server
             // A planet of the requested destination ID exists
             var destinationValid = _planets.FirstOrDefault(p => p.Id == request.DestinationPlanetId);
 
-
             if (sourceValid != null && destinationValid != null)
             {
                 lock (synclock)
@@ -222,7 +218,6 @@ namespace PlanetWars.Server
                 result.Success = false;
                 result.Message = "Invalid move command, check if the planet of the requested source/dest ID exists, belongs to that player, AND it has enough ships.";
             }
-
 
             return result;
         }
@@ -296,7 +291,6 @@ namespace PlanetWars.Server
                         newPlayer.AuthToken);
                 }
 
-
                 result.AuthToken = newPlayer.AuthToken;
                 result.Id = newPlayer.Id;
                 result.GameId = Id;
@@ -312,23 +306,6 @@ namespace PlanetWars.Server
             return result;
         }
 
-        public void StartDemoAgent(string playerName)
-        {
-            var agentTask = Task.Factory.StartNew(() =>
-            {
-                string endpoint = "";
-                if (IsRunningLocally)
-                {
-                    endpoint = "http://localhost:52802";
-                }
-                else {
-                    endpoint = "http://planetwars.azurewebsites.net";
-                }
-                var sweetDemoAgent = new Agent(playerName, endpoint);
-                sweetDemoAgent.Start().Wait();
-            });
-        }
-
         public void Start()
         {
             Running = true;
@@ -340,7 +317,6 @@ namespace PlanetWars.Server
             Running = false;
             _gameLoop.Stop();
         }
-
 
         public void Update(DateTime currentTime)
         {
@@ -480,7 +456,7 @@ namespace PlanetWars.Server
             }
 
         }
-
+        
         public StatusResult GetStatus(StatusRequest request)
         {
             var status = new StatusResult()

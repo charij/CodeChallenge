@@ -1,9 +1,6 @@
 ﻿using PlanetWars.Shared;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlanetWars.Server
 {
@@ -11,6 +8,7 @@ namespace PlanetWars.Server
     {
         private static readonly GameManager _instance = new GameManager();
         public Dictionary<int, Game> Games { get; set; }
+        private readonly static object GamesLock = new object();
 
         public static GameManager Instance
         {
@@ -32,21 +30,6 @@ namespace PlanetWars.Server
             return game;
         }
 
-        public Game GetWaitingGame()
-        {
-            return Games.Values.FirstOrDefault(g => g.Waiting);
-        }
-
-        public StatusResult GetGameStatus(int gameId)
-        {
-            if (!Games.ContainsKey(gameId)) {
-                return null;
-            }
-            var game = Games[gameId];            
-            var result = game.GetStatus(null);
-            return result;
-        }
-
         public List<string> GetAllAuthTokens()
         {
             return Games.Values.SelectMany(g => g.AuthTokens.Keys).ToList();
@@ -56,26 +39,38 @@ namespace PlanetWars.Server
         {
             return Games.Values.Where(g => g.Running == true || g.GameOver == true).ToList();
         }
-                       
+
         public LogonResult Execute(LogonRequest request)
         {
             // check for waiting games and log players into that
-            var game = GetWaitingGame();
-            if (game != null)
+            lock (GamesLock)
             {
-                game.Waiting = false;
-                return game.LogonPlayer(request.AgentName);
+                var game = Games.Values.FirstOrDefault(g => g.Waiting);
+                if (game == null)
+                {
+                    game = GetNewGame();
+                    var logonResult = game.LogonPlayer(request.AgentName);
+                    if (!logonResult.Success)
+                    {
+                        Games.Remove(game.Id);
+                    }
+
+                    return logonResult;
+                }
+                else
+                {
+                    var logonResult = game.LogonPlayer(request.AgentName);
+                    if (logonResult.Success)
+                    {
+                        game.Waiting = false;
+                        game.Start();
+                    }
+
+                    return logonResult;
+                }
             }
-            else
-            {
-                game = GetNewGame();
-                game.Waiting = true;
-                game.Start();
-                //game.StartDemoAgent("Demo");
-                return game.LogonPlayer(request.AgentName);
-            }            
         }
-                       
+
         public StatusResult Execute(StatusRequest request)
         {
             var game = Games[request.GameId];

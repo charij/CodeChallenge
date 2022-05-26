@@ -9,5 +9,7 @@
         public List<Planet> Planets { get; } = new();
 
         public List<Fleet> Fleets { get; } = new();
+
+        public bool IsGameOver { get; set; }
     }
 }

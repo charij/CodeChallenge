@@ -54,17 +54,16 @@ namespace CSharpAgent
             {
                 AgentName = Name
             });
+
             var result = await response.Content.ReadAsAsync<LogonResult>();
-            if (!result.Success)
+            if (result.Success)
             {
-                Console.WriteLine($"Error talking to server {result.Message}");
-                throw new Exception("Could not talk to sever");
+                AuthToken = result.AuthToken;
+                GameId = result.GameId;
+                MyId = result.Id;
+                TimeToNextTurn = (long)result.GameStart.Subtract(DateTime.UtcNow).TotalMilliseconds;
+                Console.WriteLine($"Your game Id is {result.GameId} auth {result.AuthToken} and starts in {TimeToNextTurn}ms");
             }
-            AuthToken = result.AuthToken;
-            GameId = result.GameId;
-            MyId = result.Id;
-            TimeToNextTurn = (long)result.GameStart.Subtract(DateTime.UtcNow).TotalMilliseconds;
-            Console.WriteLine($"Your game Id is {result.GameId} auth {result.AuthToken} and starts in {TimeToNextTurn}ms");
             return result;
         }
 
@@ -99,31 +98,42 @@ namespace CSharpAgent
 
         public async Task Start()
         {
-            await Logon();
-            if (!_isRunning)
+            try
             {
-                _isRunning = true;
-                while (_isRunning)
+                while (!(await Logon()).Success)
                 {
+                    await Task.Delay(5000);
+                }
 
-                    var gs = await UpdateGameState();
-                    if (gs.IsGameOver)
+                if (!_isRunning)
+                {
+                    _isRunning = true;
+                    while (_isRunning)
                     {
-                        _isRunning = false;
-                        Console.WriteLine("Game Over!");
-                        Console.WriteLine(gs.Status);
-                        _client.Dispose();
-                        break;
-                    }
 
-                    Update(gs);
-                    var ur = await SendUpdate(this._pendingMoveRequests);
-                    this._pendingMoveRequests.Clear();
-                    if (TimeToNextTurn > 0)
-                    {
-                        await Task.Delay((int)(TimeToNextTurn));
+                        var gs = await UpdateGameState();
+                        if (gs.IsGameOver)
+                        {
+                            _isRunning = false;
+                            Console.WriteLine("Game Over!");
+                            Console.WriteLine(gs.Status);
+                            _client.Dispose();
+                            break;
+                        }
+
+                        Update(gs);
+                        var ur = await SendUpdate(this._pendingMoveRequests);
+                        this._pendingMoveRequests.Clear();
+                        if (TimeToNextTurn > 0)
+                        {
+                            await Task.Delay((int)(TimeToNextTurn));
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
             }
         }
 

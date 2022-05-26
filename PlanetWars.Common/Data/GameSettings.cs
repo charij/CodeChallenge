@@ -2,7 +2,7 @@
 {
     using System;
 
-    public class Settings
+    public class GameSettings
     {
         /// <summary>
         /// 

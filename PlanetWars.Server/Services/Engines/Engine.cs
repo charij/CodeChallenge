@@ -1,5 +1,6 @@
 ﻿namespace PlanetWars.Common
 {
+    using PlanetWars.Common.Comm;
     using PlanetWars.Common.Data;
     using System;
     using System.Collections.Generic;
@@ -7,15 +8,15 @@
 
     public class Engine
     {
-        private readonly GameDetails gameDetails;
-        private readonly Dictionary<Guid, Command[]> commandBuffer = new();
+        private readonly Game gameDetails;
+        private readonly Dictionary<Guid, CommandRequest[]> commandBuffer = new();
         private readonly object commandLock = new();
 
-        public Engine(Settings settings, List<Player> players)
+        public Engine(GameSettings settings, List<string> players)
         {
-            gameDetails = new GameDetails 
+            gameDetails = new Game 
             { 
-                Id = Guid.NewGuid(),
+                Id = Guid.NewGuid().ToString(),
                 Players = players,
                 Settings = settings
             };
@@ -82,7 +83,7 @@
             return state;
         }
 
-        public string SubmitCommands(Guid playerId, Command[] commands)
+        public string SubmitCommands(Guid playerId, CommandRequest[] commands)
         {
             var errors = string.Empty;
 
@@ -207,7 +208,7 @@
                 }
 
                 // Check game over conditions
-                gameDetails.IsGameOver =
+                gameState.IsGameOver =
                        gameState.TurnNumber >= gameDetails.Settings.TurnLimit
                     || gameState.Planets.Where(i => i.OwnerId != Guid.Empty).Distinct().Count() <= 1;
 

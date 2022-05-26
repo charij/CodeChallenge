@@ -2,10 +2,14 @@ namespace PlanetWars.Server
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.OpenApi.Models;
+    using PlanetWars.Server.Data;
+    using PlanetWars.Server.Services;
 
     public class Startup
     {
@@ -26,6 +30,18 @@ namespace PlanetWars.Server
             services.AddSignalR();
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddControllers();
+            services
+                .AddIdentity<Player, IdentityRole>(options => { options.SignIn.RequireConfirmedAccount = false; })
+                .AddEntityFrameworkStores<GameDbContext>();
+
+            services.AddDbContextPool<GameDbContext>(options =>
+            {
+                string mySqlConnectionStr = Configuration.GetConnectionString("DefaultConnection");
+                options.UseMySql(mySqlConnectionStr, ServerVersion.AutoDetect(mySqlConnectionStr));
+            });
+
+            services.AddScoped<LobbyManager>();
         }
 
         /// <summary>
@@ -49,6 +65,7 @@ namespace PlanetWars.Server
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
             app.UseRouting();            
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>

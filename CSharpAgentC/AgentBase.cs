@@ -65,18 +65,16 @@ namespace CSharpAgent
             {
                 AgentName = Name
             });
+
             var result = await response.Content.ReadAsAsync<LogonResult>();
-            if (!result.Success)
+            if (result.Success)
             {
-                Console.WriteLine($"Error talking to server {result.Message}");
-                throw new Exception("Could not talk to sever");
+                AuthToken = result.AuthToken;
+                GameId = result.GameId;
+                MyId = result.Id;
+                TimeToNextTurn = (long)result.GameStart.Subtract(DateTime.UtcNow).TotalMilliseconds;
+                Console.WriteLine($"Your game Id is {result.GameId} auth {result.AuthToken} and starts in {TimeToNextTurn}ms");
             }
-            AuthToken = result.AuthToken;
-            GameId = result.GameId;
-            MyId = result.Id;
-            OppId = result.Id == 1 ? 2 : 1;
-            TimeToNextTurn = (long)result.GameStart.Subtract(DateTime.UtcNow).TotalMilliseconds;
-            Console.WriteLine($"Your game Id is {result.GameId} auth {result.AuthToken} and starts in {TimeToNextTurn}ms");
             return result;
         }
 
@@ -111,7 +109,11 @@ namespace CSharpAgent
 
         public async Task Start()
         {
-            await Logon();
+            while (!(await Logon()).Success)
+            {
+                await Task.Delay(5000);
+            }
+
             if (!_isRunning)
             {
                 _isRunning = true;

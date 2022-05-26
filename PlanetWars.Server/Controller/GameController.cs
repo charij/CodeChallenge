@@ -1,47 +1,58 @@
 ﻿namespace PlanetWars.Controllers
 {
-    using System;
     using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using PlanetWars.Common.Comm;
     using PlanetWars.Common.Data;
+    using PlanetWars.Server.Services;
+    using System.Threading.Tasks;
 
+    [Authorize]
     [Controller]
     public class GameController : Controller
     {
-        private readonly GameManager _gameManager;
+        private readonly IHttpContextAccessor contextAccessor;
+        private readonly LobbyManager lobbyManager;
 
-        public GameController()
+        public GameController(IHttpContextAccessor contextAccessor, LobbyManager lobbyManager)
         {
-            _gameManager = GameManager.Instance;
+            this.contextAccessor = contextAccessor;
+            this.lobbyManager = lobbyManager;
         }
         
-        [AllowAnonymous]
-        [HttpPost("logon")]
-        public ActionResult Logon(Player profile)
+        [HttpPost("Join")]
+        public async Task<ActionResult<Game>> JoinGame()
         {
+            if (!Request.Cookies.TryGetValue("playerId", out var playerId)) return Unauthorized();
+            if (!Request.Cookies.TryGetValue("lobbyId",  out var lobbyId))  return Unauthorized();
+
+            var details = await lobbyManager.JoinLobby(playerId, lobbyId);
+            var cookieOptions = new CookieOptions
+            {
+                Secure = true,
+                IsEssential = true
+            };
+
+            Response.Cookies.Append("GameId", $"{details.Id}", cookieOptions);
+
+            return Ok(details);
         }
 
-        [HttpPost("join")]
-        public ActionResult<GameDetails> Join(string gameId, Settings settings)
+        [HttpPost("Submit")]
+        public async Task<ActionResult<CommandResponse>> Submit(CommandRequest[] commands)
         {
-            if (!string.IsNullOrEmpty(gameId) && Guid.TryParse(gameId, out var id))
-            {
-                // attempt to join a game / league
-            }
-            else
-            if (settings == null)
-            {
-                // create a new game
-            }
-            else 
-            {
-                // join a random lobby game
-            }
-        }
+            if (!Request.Cookies.TryGetValue("playerId", out var playerId)) return Unauthorized();
+            if (!Request.Cookies.TryGetValue("gameId",   out var gameId))   return Unauthorized();
+             
+            var response = await lobbyManager.SubmitMove(playerId, gameId, commands);
 
-        [HttpPost("submit")]
-        public ActionResult<State> Move(Guid gameId, Command[] commands)
-        {
+            if (response.State.IsGameOver) 
+            {
+                Response.Cookies.Delete("gameId");
+            }
+
+            return Ok(response);
         }
     }
 }
