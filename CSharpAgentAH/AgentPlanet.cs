@@ -22,32 +22,27 @@ namespace CSharpAgent
             Position = planet.Position;
             OwnerId = planet.OwnerId;
 
-
             CalculateValue();
+            SetShipsRequiredToConquer();
+            SetShipsRequiredForDefence();
+            CalculateExcessShips(0);
         }
 
         public void CalculateValue()
         {
-            int incomingEnemyShips = _gameState.Fleets
-                .Where(x => x.OwnerId != _ourOwnerId && x.DestinationPlanetId == Id)
-                .Sum(x => x.NumberOfShips);
-
-            int incomingOurShips = _gameState.Fleets
-                .Where(x => x.OwnerId == _ourOwnerId && x.DestinationPlanetId == Id)
-                .Sum(x => x.NumberOfShips);
-
             double nearestEnemyPlanet = _gameState.Planets
                 .Where(x => x.OwnerId != -1 && x.OwnerId != _ourOwnerId)
                 .Min(x => x.Position.Distance(Position));
 
-            double nearestOurPlanet = _gameState.Planets
-                .Where(x => x.OwnerId == _ourOwnerId)
-                .Min(x => GetDistanceTo(x));
+            var friendly = _gameState.Planets
+                .Where(x => x.OwnerId == _ourOwnerId && x.Id != Id).ToList();
+
+            double nearestOurPlanet = friendly.Count > 0 ? friendly.Min(x => GetDistanceTo(x)) : 0;
 
             var ships = OwnerId == -1 ? NumberOfShips : 0;
             
             Value = new PlanetValue(GrowthRate, TurnsLeft, ships);
-            Value.CalculateValue(incomingEnemyShips, incomingOurShips, nearestEnemyPlanet, nearestOurPlanet);
+            Value.CalculateValue(IncomingHostileShips, IncomingOurShips, nearestEnemyPlanet, nearestOurPlanet);
         }
 
         
@@ -59,15 +54,7 @@ namespace CSharpAgent
                 return;
             }
 
-            int incomingEnemyShips = _gameState.Fleets
-                .Where(x => x.OwnerId != _ourOwnerId && x.DestinationPlanetId == Id)
-                .Sum(x => x.NumberOfShips);
-
-            int incomingOurShips = _gameState.Fleets
-                .Where(x => x.OwnerId == _ourOwnerId && x.DestinationPlanetId == Id)
-                .Sum(x => x.NumberOfShips);
-
-            ShipsRequiredForDefence = NumberOfShips + GrowthRate - incomingEnemyShips + incomingOurShips + 1;
+            ShipsRequiredForDefence = NumberOfShips + GrowthRate - IncomingHostileShips + IncomingOurShips + 1;
 
         }
 
@@ -78,8 +65,6 @@ namespace CSharpAgent
                 ShipsRequiredForDefence = 0;
                 return;
             }
-
-
 
             ShipsRequiredToConquer = Status == PlanetStatus.Hostile
                 ? NumberOfShips + GrowthRate + IncomingHostileShips - IncomingOurShips + 1
@@ -121,7 +106,9 @@ namespace CSharpAgent
 
             var excess = NumberOfShips + GrowthRate - IncomingHostileShips - newShipsSentOut;
 
-            ExcessShips = Math.Min(0, excess);
+            if (excess < 0) excess = 0;
+
+            ExcessShips = excess;
         }
 
         public PlanetStatus Status

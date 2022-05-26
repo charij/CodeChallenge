@@ -22,13 +22,13 @@ namespace CSharpAgent
         public override void Update(StatusResult gameState)
         {
             var allPlanets = gameState.Planets.Select(x => new AgentPlanet(x, MyId, gameState));
-            foreach(var planet in allPlanets)
-            {
-                planet.CalculateValue();
-                planet.SetShipsRequiredForDefence();
-                planet.SetShipsRequiredToConquer();
-                planet.CalculateExcessShips(0);
-            }
+            //foreach(var planet in allPlanets)
+            //{
+            //    planet.CalculateValue();
+            //    planet.SetShipsRequiredForDefence();
+            //    planet.SetShipsRequiredToConquer();
+            //    planet.CalculateExcessShips(0);
+            //}
 
             var friendlyPlanets = allPlanets
                 //.Where(x => x.ExcessShips > 0)
