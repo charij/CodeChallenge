@@ -35,10 +35,7 @@ namespace CSharpAgent
             if (targetPlanet == null)
             {   // otherwise pick the _nearest_ planet we don't own
 
-                var myFirstPlanet = gameState.Planets.FirstOrDefault(p => p.OwnerId == MyId);
-                if (myFirstPlanet == null) return;
-
-                var nearestOtherPlanet = gameState.Planets.Where(p => p.OwnerId != MyId).OrderBy(p => p.Position.Distance(myFirstPlanet.Position)).FirstOrDefault();
+                var nearestOtherPlanet = NearestToMe(gameState);
                 if (nearestOtherPlanet == null) return;
 
                 targetPlanet = nearestOtherPlanet;
@@ -56,6 +53,31 @@ namespace CSharpAgent
                     SendFleet(planet.Id, targetPlanet.Id, ships);
                 }
             }
+        }
+
+        public Planet NearestToMyFirst(StatusResult gameState)
+        {
+            var myFirstPlanet = gameState.Planets.FirstOrDefault(p => p.OwnerId == MyId);
+            if (myFirstPlanet == null) return null;
+
+            var nearestOtherPlanet = gameState.Planets.Where(p => p.OwnerId != MyId).OrderBy(p => p.Position.Distance(myFirstPlanet.Position)).FirstOrDefault();
+
+            return nearestOtherPlanet;
+        }
+
+        public double TotalDistance(Planet target, IEnumerable<Planet> planets)
+        {
+            return planets.Sum(p => p.Position.Distance(target.Position));
+        }
+
+        public Planet NearestToMe(StatusResult gameState)
+        {
+            var myPlanets = gameState.Planets.Where(p => p.OwnerId == MyId);
+            if (!myPlanets.Any()) return null;
+
+            var nearestOtherPlanet = gameState.Planets.Where(p => p.OwnerId != MyId).OrderBy(p => TotalDistance(p, myPlanets)).FirstOrDefault();
+
+            return nearestOtherPlanet;
         }
     }
 }
