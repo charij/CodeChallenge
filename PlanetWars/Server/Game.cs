@@ -28,13 +28,13 @@ namespace PlanetWars.Server
         private int _MAXPLAYERID = 1;
         private int _MAXFLEETID = 0;
 
-        private int MIN_NUM_PLANETS = 3;
-        private int MAX_NUM_PLANETS = 10;
+        private int MIN_NUM_PLANETS = 8;
+        private int MAX_NUM_PLANETS = 20;
         private int MIN_GROWTH_RATE = 1;
         private int MAX_GROWTH_RATE = 10;
         private int MIN_NUM_SHIPS = 0;
         private int MAX_NUM_SHIPS = 100;
-        private int MAP_SIZE = 20;
+        private int MAP_SIZE = 40;
 
         public static readonly long START_DELAY = 10000; // 5 seconds
         public static readonly long PLAYER_TURN_LENGTH = 700; // 200 ms
