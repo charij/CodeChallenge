@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CSharpAgent
 {
     class Program
-    {
+    {            
         static void Main(string[] args)
         {
             // Arg parsing
@@ -15,7 +15,7 @@ namespace CSharpAgent
             var nameIndex = args.ToList().Select(a => a.ToLower()).ToList().IndexOf("-name");
             
             var endpoint = args.Length > endpointIndex + 1 ? args[endpointIndex + 1] : "http://localhost:52802/";
-            var name = args.Length > nameIndex + 1 ? args[nameIndex + 1] : $"Pete {new Random().Next(999)}";
+            var name = args.Length > nameIndex + 1 ? args[nameIndex + 1] : $"{Guid.NewGuid()} - Venerable";
 
             // Start Agent            
             var agent = new Agent(name, endpoint);

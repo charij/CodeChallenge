@@ -18,13 +18,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanetWars.Shared", "Planet
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Submissions", "Submissions", "{B6731ED2-694E-4FA0-9D81-89B1119A97DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fane-Vu", "CSharpAgentA\Fane-Vu.csproj", "{AE71FB49-96E2-447A-B2AB-42F2C9A5D0DC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fane-Vu", "Submission-FaneVu\Fane-Vu.csproj", "{AE71FB49-96E2-447A-B2AB-42F2C9A5D0DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bob-Will", "CSharpAgentB\Bob-Will.csproj", "{1EF79AA6-F2D9-41EE-ADE8-992D0C5CC42D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bob-Will", "Submission-BobWill\Bob-Will.csproj", "{1EF79AA6-F2D9-41EE-ADE8-992D0C5CC42D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pete", "CSharpAgentC\Pete.csproj", "{D8D3D403-D1F6-477A-8CFC-BE3110E2ABD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pete", "Submission-Pete\Pete.csproj", "{D8D3D403-D1F6-477A-8CFC-BE3110E2ABD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Supernova", "CSharpAgentD\Supernova.csproj", "{9F950201-852E-4C08-B177-E7E7D6B41D44}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Supernova", "Submission-Supernova\Supernova.csproj", "{9F950201-852E-4C08-B177-E7E7D6B41D44}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Archive", "Archive", "{D619E862-8E85-400F-B62B-37CACCF1C875}"
 EndProject
@@ -34,9 +34,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlanetWars.Common", "Planet
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlanetWars.Server", "PlanetWars.Server\PlanetWars.Server.csproj", "{F34C7CC7-A43D-454C-8DBD-F9EBB9645D50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venerable", "CSharpAgent - Venerable\Venerable.csproj", "{7F07D6E0-F2D2-465B-B480-B54B698B3422}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venerable", "Submission-Venerable\Venerable.csproj", "{7F07D6E0-F2D2-465B-B480-B54B698B3422}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Galactica", "CSharpAgentCarlGalactica\Galactica.csproj", "{3C53E857-2A55-4536-9AA6-868F9D291C71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Galactica", "Submission-Galactica\Galactica.csproj", "{3C53E857-2A55-4536-9AA6-868F9D291C71}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestAgents", "TestAgents", "{6017CEEF-0BBB-4C3F-B8F0-1D61B46E4FA5}"
 EndProject
@@ -54,9 +54,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agent-Scatter", "Agent-Scat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agent-Turtle", "Agent-Turtle\Agent-Turtle.csproj", "{5FD77265-2307-4EF8-A990-A6ECEE9690C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shamz", "CSharpAgentShamz\Shamz.csproj", "{075CB555-ABF4-4751-BBF6-51287F626870}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shamz", "Submission-Shamz\Shamz.csproj", "{075CB555-ABF4-4751-BBF6-51287F626870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AH", "CSharpAgentAH\AH.csproj", "{F019553C-DEE4-4C33-BDA2-07E3DD6F740F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AH", "Submission-AH\AH.csproj", "{F019553C-DEE4-4C33-BDA2-07E3DD6F740F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Supernova", "Supernova", "{7C30B4C4-51CB-44E1-957A-A2298456B9BC}"
 EndProject

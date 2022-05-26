@@ -43,18 +43,19 @@ namespace PlanetWars.Server
         public LogonResult Execute(LogonRequest request)
         {
             // check for waiting games and log players into that
-            lock (GamesLock)
+            //lock (GamesLock)
             {
                 var game = Games.Values.FirstOrDefault(g => g.Waiting);
                 if (game == null)
                 {
                     game = GetNewGame();
+                    game.Waiting = true;
+                    game.Start();
                     var logonResult = game.LogonPlayer(request.AgentName);
                     if (!logonResult.Success)
                     {
                         Games.Remove(game.Id);
                     }
-
                     return logonResult;
                 }
                 else
@@ -65,7 +66,6 @@ namespace PlanetWars.Server
                         game.Waiting = false;
                         game.Start();
                     }
-
                     return logonResult;
                 }
             }

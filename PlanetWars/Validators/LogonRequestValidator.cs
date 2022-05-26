@@ -13,8 +13,7 @@ namespace PlanetWars.Validators
         public LogonRequestValidator()
         {
             RuleFor(logon => logon.AgentName)
-                .NotEmpty().WithMessage("Please use a non empty agent name, logon failed")
-                .Length(3, 15).WithMessage("Please use an agent name between 3-15 characters, logon failed");            
+                .NotEmpty().WithMessage("Please use a non empty agent name, logon failed");            
         }
     }
 }
