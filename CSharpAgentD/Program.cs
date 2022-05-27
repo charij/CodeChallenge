@@ -17,7 +17,7 @@ namespace CSharpAgent
             var endpoint = args.Length > endpointIndex + 1 ? args[endpointIndex + 1] : "http://localhost:52802/";
             var name = args.Length > nameIndex + 1 ? args[nameIndex + 1] : $"Supernova{new Random().Next(99)}";
 
-            // Start Agent            
+            // Start Agent
             var agent = new Agent(name, endpoint);
             agent.Start().Wait();            
         }
