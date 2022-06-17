@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agent-Scatter", "Agent-Scat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agent-Turtle", "Agent-Turtle\Agent-Turtle.csproj", "{5FD77265-2307-4EF8-A990-A6ECEE9690C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanetWars.Bot", "PlanetWars.Bot\PlanetWars.Bot.csproj", "{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{5FD77265-2307-4EF8-A990-A6ECEE9690C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FD77265-2307-4EF8-A990-A6ECEE9690C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FD77265-2307-4EF8-A990-A6ECEE9690C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
