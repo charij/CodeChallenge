@@ -29,13 +29,9 @@ namespace PlanetWars.Server
         {
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "Challenge.Service", Version = "v1" }));
             services.AddControllers();
-            services
-                .AddIdentity<Player, IdentityRole>(options => { options.SignIn.RequireConfirmedAccount = false; })
-                .AddEntityFrameworkStores<GameDbContext>();
-
             services.AddDbContextPool<GameDbContext>(options =>
             {
-                string mySqlConnectionStr = Configuration.GetConnectionString("DefaultConnection");
+                var mySqlConnectionStr = Configuration.GetConnectionString("DefaultConnection");
                 options.UseMySql(mySqlConnectionStr, ServerVersion.AutoDetect(mySqlConnectionStr));
             });
 
