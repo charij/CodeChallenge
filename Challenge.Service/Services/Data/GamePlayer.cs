@@ -1,4 +1,4 @@
-﻿namespace PlanetWars.Server.Data
+﻿namespace Challenge.Server.Data
 {
     public class GamePlayer
     {

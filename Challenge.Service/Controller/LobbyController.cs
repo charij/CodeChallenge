@@ -1,13 +1,12 @@
-﻿namespace PlanetWars.Controllers
+﻿namespace Challenge.Server.Controllers
 {
+    using Challenge.Server.Data;
     using Challenge.Server.Services;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
-    using PlanetWars.Common.Data;
-    using PlanetWars.Server.Services;
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Threading.Tasks;

@@ -1,7 +1,7 @@
 ﻿namespace Challenge.Server.Services
 {
     using Microsoft.EntityFrameworkCore;
-    using PlanetWars.Server.Data;
+    using Challenge.Server.Data;
 
     public class GameDbContext : DbContext
     {
@@ -9,7 +9,6 @@
             : base(options)
         { }
 
-        public DbSet<Command> Commands { get; set; }
         public DbSet<Game> Games { get; set; }
         public DbSet<GamePlayer> GamePlayers { get; set; }
         public DbSet<Lobby> Lobbies { get; set; }
@@ -17,17 +16,6 @@
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Command>(entity =>
-            {
-                entity.HasKey(i => i.Id);
-                entity.HasOne(i => i.Game)
-                    .WithMany(i => i.Commands)
-                    .HasForeignKey(i => i.GameId);
-                entity.HasOne(i => i.Player)
-                    .WithMany(i => i.Commands)
-                    .HasForeignKey(i => i.PlayerId);
-            });
-
             builder.Entity<Game>(entity =>
             {
                 entity.HasKey(i => i.Id);

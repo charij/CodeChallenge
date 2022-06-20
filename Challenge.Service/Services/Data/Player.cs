@@ -1,27 +1,23 @@
-﻿namespace PlanetWars.Server.Data
+﻿namespace Challenge.Server.Data
 {
     using System.Collections.Generic;
 
-    public class Game
+    public class Player
     {
-        public Game() 
+        public Player()
         {
-            Commands = new HashSet<Command>();
             GamePlayers = new HashSet<GamePlayer>();
+            LobbiesOwned = new HashSet<Lobby>();
         }
 
         public string Id { get; set; }
-        
+
         public string LobbyId { get; set; }
 
         public Lobby Lobby { get; set; }
 
-        public bool IsActive { get; set; }
-
-        public int Seed { get; set; }
-
-        public HashSet<Command> Commands { get; set; }
-
         public HashSet<GamePlayer> GamePlayers { get; set; }
+
+        public HashSet<Lobby> LobbiesOwned { get; set; }
     }
 }

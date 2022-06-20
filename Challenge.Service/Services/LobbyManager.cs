@@ -1,13 +1,8 @@
-﻿namespace PlanetWars.Server.Services
+﻿namespace Challenge.Server.Services
 {
-    using Challenge.Server.Services;
+    using Challenge.Server.Data;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
-    using PlanetWars.Common;
-    using PlanetWars.Common.Comm;
-    using PlanetWars.Common.Data;
-    using PlanetWars.Common.Data.Enum;
-    using PlanetWars.Server.Data;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
