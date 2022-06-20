@@ -20,7 +20,7 @@
         private readonly IHttpContextAccessor contextAccessor;
         private readonly LobbyManager lobbyManager;
 
-        public LobbyController(ILogger<LobbyController> logger, GameDbContext dbContext, IHttpContextAccessor contextAccessor, LobbyManager lobbyManager)
+        public LobbyController(ILogger<LobbyController> logger, LobbyManager lobbyManager, GameDbContext dbContext, IHttpContextAccessor contextAccessor)
         {
             this.logger = logger;
             this.dbContext = dbContext;
@@ -32,7 +32,7 @@
         public async Task<ActionResult<Lobby[]>> GetAllActiveLobbies()
         {
             var lobbies = await dbContext.Lobbies
-                .Where(i => i.IsActive)
+                .Where(i => !i.DeletedTime.HasValue)
                 .ToArrayAsync();
 
             return lobbies.Any()
