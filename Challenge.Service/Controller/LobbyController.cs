@@ -5,8 +5,8 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Threading.Tasks;
@@ -16,24 +16,35 @@
     public class LobbyController : Controller
     {
         private readonly ILogger<LobbyController> logger;
-        private readonly GameDbContext dbContext;
-        private readonly IHttpContextAccessor contextAccessor;
         private readonly LobbyManager lobbyManager;
 
-        public LobbyController(ILogger<LobbyController> logger, LobbyManager lobbyManager, GameDbContext dbContext, IHttpContextAccessor contextAccessor)
+        public LobbyController(ILogger<LobbyController> logger, LobbyManager lobbyManager)
         {
             this.logger = logger;
-            this.dbContext = dbContext;
-            this.contextAccessor = contextAccessor;
             this.lobbyManager = lobbyManager;
         }
 
-        [HttpGet("All")]
-        public async Task<ActionResult<Lobby[]>> GetAllActiveLobbies()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Lobby>>> Get(
+            [FromBody] int index, 
+            [FromBody] int count,
+            [FromBody] string[] lobbyTypes,
+            [FromBody] string[] gameTypes,
+            [FromBody] bool? isStarted,
+            [FromBody] bool? isCompleted)
         {
-            var lobbies = await dbContext.Lobbies
-                .Where(i => !i.DeletedTime.HasValue)
-                .ToArrayAsync();
+            var lobbies = await lobbyManager.GetLobbies(index, count, lobbyTypes, gameTypes, isStarted, isCompleted);
+
+            return lobbies.Any()
+                ? Ok(lobbies)
+                : NoContent();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Lobby>>> Get(
+            [FromBody] string[] lobbyIds)
+        {
+            var lobbies = await lobbyManager.GetLobbies(lobbyIds);
 
             return lobbies.Any()
                 ? Ok(lobbies)
@@ -41,20 +52,24 @@
         }
 
         [HttpPost("Create")]
-        public async Task<ActionResult<Lobby>> Create(LobbySettings settings)
+        public async Task<ActionResult<Lobby>> Create(
+            [FromBody] string lobbyType,
+            [FromBody] string gameType,
+            [FromBody] int maxPlayers)
         {
             if (!Request.Cookies.TryGetValue("playerId", out var playerId))
             {
                 return Unauthorized();
             }
 
-            var lobby = await lobbyManager.Create(playerId, settings);
-            Response.Cookies.Append("lobbyId", $"{lobby.Id}", new CookieOptions { Secure = true });
+            var lobby = await lobbyManager.Create(playerId, lobbyType, gameType, maxPlayers);
+
             return Ok(lobby);
         }
 
         [HttpPost("Join")]
-        public async Task<ActionResult> Join([Required]string lobbyId)
+        public async Task<ActionResult> Join(
+             [Required] string lobbyId)
         {
             if (!Request.Cookies.TryGetValue("playerId", out var playerId))
             {

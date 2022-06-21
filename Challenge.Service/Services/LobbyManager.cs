@@ -18,22 +18,75 @@
             this.dbContext = dbContext;
         }
 
-        public async Task<Lobby[]> GetAllActiveLobbies()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="count"></param>
+        /// <param name="lobbyTypes"></param>
+        /// <param name="gameTypes"></param>
+        /// <param name="isStarted"></param>
+        /// <param name="isCompleted"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Lobby>> GetLobbies(
+            int index = 0, 
+            int count = 10, 
+            string[] lobbyTypes = null, 
+            string[] gameTypes = null, 
+            bool? isStarted = null, 
+            bool? isCompleted = null)
         {
-            var lobbies = await dbContext.Lobbies
-                .Where(i => i.IsActive)
-                .ToArrayAsync();
+            IQueryable<Lobby> lobbies = dbContext.Lobbies;
 
-            return lobbies;
+            if (lobbyTypes != null)
+            {
+                lobbies = lobbies.Where(i => lobbyTypes.Contains(i.LobbyType));
+            }
+            if (gameTypes != null)
+            {
+                lobbies = lobbies.Where(i => gameTypes.Contains(i.GameType));
+            }
+            if (isStarted.HasValue)
+            {
+                lobbies = lobbies.Where(i => i.StartedTime.HasValue == isCompleted.Value);
+            }
+            if (isCompleted.HasValue)
+            {
+                lobbies = lobbies.Where(i => i.CompletedTime.HasValue == isCompleted.Value);
+            }
+
+            return await lobbies
+                .Skip(index)
+                .Take(count)
+                .ToArrayAsync();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lobbyIds"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Lobby>> GetLobbies(string[] lobbyIds)
+        {
+            return await dbContext.Lobbies
+                .Where(i => lobbyIds.Contains(i.Id))
+                .ToArrayAsync();
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="playerId"></param>
-        /// <param name="settings"></param>
+        /// <param name="lobbyType"></param>
+        /// <param name="gameType"></param>
+        /// <param name="maxPlayers"></param>
         /// <returns></returns>
-        public async Task<Lobby> Create(string playerId, LobbySettings settings)
+        /// <exception cref="KeyNotFoundException"></exception>
+        public async Task<Lobby> Create(
+            string playerId,
+            string lobbyType,
+            string gameType,
+            int maxPlayers)
         {
             var player = await dbContext.Players.FirstOrDefaultAsync(i => i.Id == playerId);
             if (player == null)
@@ -119,9 +172,9 @@
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<CommandResponse> Ready(string playerId, string lobbyId)
+        public async Task Ready(string playerId, string lobbyId)
         {
-
+            // return only when all lobby players are ready? then start game(s)
         }
     }
 }
