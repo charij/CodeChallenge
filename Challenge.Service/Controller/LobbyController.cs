@@ -3,7 +3,6 @@
     using Challenge.Server.Data;
     using Challenge.Server.Services;
     using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using System.Collections.Generic;
@@ -33,7 +32,13 @@
             [FromBody] bool? isStarted,
             [FromBody] bool? isCompleted)
         {
-            var lobbies = await lobbyManager.GetLobbies(index, count, lobbyTypes, gameTypes, isStarted, isCompleted);
+            var lobbies = await lobbyManager.GetLobbies(
+                index, 
+                count, 
+                lobbyTypes, 
+                gameTypes, 
+                isStarted, 
+                isCompleted);
 
             return lobbies.Any()
                 ? Ok(lobbies)
@@ -44,7 +49,8 @@
         public async Task<ActionResult<IEnumerable<Lobby>>> Get(
             [FromBody] string[] lobbyIds)
         {
-            var lobbies = await lobbyManager.GetLobbies(lobbyIds);
+            var lobbies = await lobbyManager.GetLobbies(
+                lobbyIds);
 
             return lobbies.Any()
                 ? Ok(lobbies)
@@ -62,7 +68,11 @@
                 return Unauthorized();
             }
 
-            var lobby = await lobbyManager.Create(playerId, lobbyType, gameType, maxPlayers);
+            var lobby = await lobbyManager.Create(
+                playerId, 
+                lobbyType, 
+                gameType, 
+                maxPlayers);
 
             return Ok(lobby);
         }
@@ -77,7 +87,7 @@
             }
 
             await lobbyManager.Join(playerId, lobbyId);
-            Response.Cookies.Append("lobbyId", $"{lobbyId}", new CookieOptions { Secure = true });
+
             return Ok();
         }
 
@@ -90,20 +100,20 @@
             }
 
             await lobbyManager.Leave(playerId);
-            Response.Cookies.Delete("lobbyId");
+
             return Ok();
         }
 
         [HttpPost("Ready")]
-        public async Task<ActionResult<Game>> Ready([Required]string lobbyId)
+        public async Task<ActionResult<Game>> Ready()
         {
             if (!Request.Cookies.TryGetValue("playerId", out var playerId))
             {
                 return Unauthorized();
             }
 
-            var game = await lobbyManager.Ready(playerId, lobbyId);
-            Response.Cookies.Append("GameId", $"{game.Id}", new CookieOptions { Secure = true });
+            var game = await lobbyManager.Ready(playerId);
+
             return Ok(game);
         }
     }

@@ -3,6 +3,7 @@
     using Challenge.Server.Data;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -95,9 +96,20 @@
                 throw new KeyNotFoundException($"Player {playerId} not found");
             }
 
+            if (player.LobbyId != null)
+            {
+                logger.LogWarning($"Player {playerId} can't create a lobby while already in lobby {player.LobbyId}");
+                throw new Exception($"Player {playerId} can't create a lobby while already in lobby {player.LobbyId}");
+            }
+
             var lobby = player.Lobby = new Lobby
             {
-
+                Owner = player,
+                Seed = new Random().Next(int.MinValue, int.MaxValue),
+                LobbyType = lobbyType,
+                GameType = gameType,
+                MaxPlayers = maxPlayers,
+                CreatedTime = DateTime.UtcNow
             };
 
             dbContext.Lobbies.Add(lobby);
@@ -115,13 +127,6 @@
         /// <returns></returns>
         public async Task Join(string playerId, string lobbyId)
         {
-            var isLobbyActive = await dbContext.Lobbies.AnyAsync(i => i.Id == lobbyId && i.IsActive);
-            if (!isLobbyActive)
-            {
-                logger.LogWarning($"Lobby {lobbyId} does not exist");
-                throw new KeyNotFoundException($"Lobby {lobbyId} does not exist");
-            }
-
             var player = await dbContext.Players
                 .Where(i => i.Id == playerId)
                 .Include(i => i.Lobby)
@@ -133,9 +138,17 @@
                 throw new KeyNotFoundException($"Player {playerId} not found");
             }
 
-            if (!player.Lobby.Players.Any())
+            if (player.LobbyId != null)
             {
-                dbContext.Lobbies.Remove(player.Lobby);
+                logger.LogWarning($"Player {playerId} can't join a lobby while already in lobby {player.LobbyId}");
+                throw new Exception($"Player {playerId} can't join a lobby while already in lobby {player.LobbyId}");
+            }
+
+            var isLobbyActive = await dbContext.Lobbies.AnyAsync(i => i.Id == lobbyId && !i.StartedTime.HasValue);
+            if (!isLobbyActive)
+            {
+                logger.LogWarning($"Lobby {lobbyId} does not exist");
+                throw new KeyNotFoundException($"Lobby {lobbyId} does not exist");
             }
 
             player.LobbyId = lobbyId;
@@ -162,6 +175,9 @@
                 throw new KeyNotFoundException($"Player {playerId} not found");
             }
 
+
+            // if owner then kick all
+
             player.LobbyId = null;
             dbContext.Players.Update(player);
             if (!player.Lobby.Players.Any())
@@ -172,9 +188,19 @@
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task Ready(string playerId, string lobbyId)
+        public async Task<Game> Ready(string playerId)
         {
-            // return only when all lobby players are ready? then start game(s)
+            var player = await dbContext.Players
+                .Where(i => i.Id == playerId)
+                .Include(i => i.Lobby)
+                .FirstOrDefaultAsync();
+
+            var game = await GenerateGame(player.Lobby);
+        }
+
+        private async Task<Game> GenerateGame(Lobby lobby)
+        {
+            throw new NotImplementedException();
         }
     }
 }
