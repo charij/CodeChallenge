@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agent-Turtle", "Agent-Turtl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanetWars.Bot", "PlanetWars.Bot\PlanetWars.Bot.csproj", "{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlanetWars.Bot.Core", "PlanetWars.Bot.Core\PlanetWars.Bot.Core.csproj", "{D1850FF7-8F9D-42BA-ACD3-35D665377628}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "PlanetWars.Bot.FSharp", "PlanetWars.Bot.FSharp\PlanetWars.Bot.FSharp.fsproj", "{103AEF16-D768-477B-B4CB-8BE81EA726D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +69,14 @@ Global
 		{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B64109A-E9F7-43AB-91D1-B4EECB23EEFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1850FF7-8F9D-42BA-ACD3-35D665377628}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1850FF7-8F9D-42BA-ACD3-35D665377628}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1850FF7-8F9D-42BA-ACD3-35D665377628}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1850FF7-8F9D-42BA-ACD3-35D665377628}.Release|Any CPU.Build.0 = Release|Any CPU
+		{103AEF16-D768-477B-B4CB-8BE81EA726D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{103AEF16-D768-477B-B4CB-8BE81EA726D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{103AEF16-D768-477B-B4CB-8BE81EA726D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{103AEF16-D768-477B-B4CB-8BE81EA726D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
